@@ -1,0 +1,4 @@
+<Solution>
+  <Folder Name="/Orchestration/" />
+  <Project Path="ZeroTrustOAuth.AppHost/ZeroTrustOAuth.AppHost.csproj" />
+</Solution>
