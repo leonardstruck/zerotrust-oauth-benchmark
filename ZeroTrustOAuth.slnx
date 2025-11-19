@@ -10,5 +10,6 @@
   <Folder Name="/src/" />
   <Folder Name="/src/Orchestration/">
     <Project Path="src/ZeroTrustOAuth.AppHost/ZeroTrustOAuth.AppHost.csproj" />
+    <Project Path="src/ZeroTrustOAuth.ServiceDefaults/ZeroTrustOAuth.ServiceDefaults.csproj" />
   </Folder>
 </Solution>
