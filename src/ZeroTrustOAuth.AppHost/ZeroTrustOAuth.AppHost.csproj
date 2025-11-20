@@ -5,4 +5,14 @@
         <UserSecretsId>a59ae261-d2dd-4d64-b476-887398eaa756</UserSecretsId>
     </PropertyGroup>
 
+    <ItemGroup>
+        <PackageReference Include="Aspire.Hosting.AppHost"/>
+        <PackageReference Include="Aspire.Hosting.Keycloak"/>
+        <PackageReference Include="Aspire.Hosting.Yarp"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\ZeroTrustOAuth.Hosting.OpenTelemetryCollector\ZeroTrustOAuth.Hosting.OpenTelemetryCollector.csproj" IsAspireProjectResource="false"/>
+    </ItemGroup>
+
 </Project>
