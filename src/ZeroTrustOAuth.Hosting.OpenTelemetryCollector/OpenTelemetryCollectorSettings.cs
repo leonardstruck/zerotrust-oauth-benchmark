@@ -16,11 +16,6 @@ public class OpenTelemetryCollectorSettings
     /// </summary>
     public bool EnableHttpEndpoint { get; set; } = true;
 
-    /// <summary>
-    ///     When true, exposes the collector configuration (for example, through mounted files or endpoints) to aid in
-    ///     diagnostics and transparency.
-    /// </summary>
-    public bool ExposeCollectorConfiguration { get; set; }
 
     /// <summary>
     ///     When true, exposes a health check endpoint that can be probed by orchestrators and monitoring systems to verify

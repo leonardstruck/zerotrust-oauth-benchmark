@@ -40,9 +40,9 @@ public static class OpenTelemetryCollectorExtensions
                 )
                 .WithCertificateKeyPairConfiguration(context =>
                 {
-                    context.Arguments.AddRange(
-                        ReferenceExpression.Create(
-                            $"--config=yaml:exporters::otlp::tls::cert_file: {context.CertificatePath}"),
+                    context.Arguments.Add(ReferenceExpression.Create(
+                        $"--config=yaml:exporters::otlp::tls::cert_file: {context.CertificatePath}"));
+                    context.Arguments.Add(
                         ReferenceExpression.Create($"--config=yaml:exporters::otlp::tls::key_file: {context.KeyPath}")
                     );
                     return Task.CompletedTask;

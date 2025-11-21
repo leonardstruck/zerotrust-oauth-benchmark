@@ -1,6 +1,7 @@
 IDistributedApplicationBuilder builder = DistributedApplication.CreateBuilder(args);
 
-IResourceBuilder<OpenTelemetryCollectorResource> otlpCollector = builder.AddOpenTelemetryCollector("otel-collector");
+IResourceBuilder<OpenTelemetryCollectorResource> otlpCollector =
+    builder.AddOpenTelemetryCollector("otel-collector");
 
 IResourceBuilder<KeycloakResource> identity = builder.AddKeycloak("identity")
     .WithLifetime(ContainerLifetime.Persistent);
