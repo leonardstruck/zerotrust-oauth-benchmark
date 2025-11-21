@@ -4,6 +4,10 @@ using Aspire.Hosting.ApplicationModel;
 
 namespace Aspire.Hosting;
 
+/// <summary>
+///     Extension methods for configuring and wiring an embedded OpenTelemetry Collector
+///     within an Aspire distributed application.
+/// </summary>
 public static class OpenTelemetryCollectorExtensions
 {
     private const int ContainerGrpcPort = 4317;
@@ -12,6 +16,16 @@ public static class OpenTelemetryCollectorExtensions
 
     private const string HealthCheckEndpointName = "health";
 
+    /// <summary>
+    ///     Adds an OpenTelemetry Collector container resource to the distributed application and
+    ///     configures common receivers, exporters, and health checks based on the provided settings.
+    /// </summary>
+    /// <param name="builder">The distributed application builder to add the collector resource to.</param>
+    /// <param name="name">The unique resource name for the collector.</param>
+    /// <param name="configure">Optional delegate to configure <see cref="OpenTelemetryCollectorSettings" />.</param>
+    /// <returns>
+    ///     A resource builder for the created <see cref="OpenTelemetryCollectorResource" /> allowing further customization.
+    /// </returns>
     public static IResourceBuilder<OpenTelemetryCollectorResource> AddOpenTelemetryCollector(
         this IDistributedApplicationBuilder builder, [ResourceName] string name,
         Action<OpenTelemetryCollectorSettings>? configure = null)
@@ -97,6 +111,18 @@ public static class OpenTelemetryCollectorExtensions
         return resourceBuilder;
     }
 
+    /// <summary>
+    ///     Configures a resource to route its OTLP export to the provided OpenTelemetry Collector,
+    ///     selecting the correct endpoint (gRPC or HTTP/Protobuf) based on the resource's
+    ///     <see cref="OtlpExporterAnnotation" /> requirements. Also ensures the resource waits for the
+    ///     collector to be ready.
+    /// </summary>
+    /// <typeparam name="T">
+    ///     The resource type that supports environment configuration and wait semantics.
+    /// </typeparam>
+    /// <param name="builder">The resource builder being configured.</param>
+    /// <param name="collector">The collector resource to route exports to.</param>
+    /// <returns>The same builder instance for chaining.</returns>
     public static IResourceBuilder<T> WithOpenTelemetryCollectorRouting<T>(this IResourceBuilder<T> builder,
         IResourceBuilder<OpenTelemetryCollectorResource> collector)
         where T : IResourceWithEnvironment, IResourceWithWaitSupport

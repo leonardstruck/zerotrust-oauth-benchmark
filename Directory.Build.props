@@ -5,9 +5,10 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
 
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
         <AnalysisLevel>latest</AnalysisLevel>
         <AnalysisMode>Recommended</AnalysisMode>
-
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
         <CodeAnalysisTreatWarningsAsErrors>true</CodeAnalysisTreatWarningsAsErrors>
         <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
