@@ -15,7 +15,7 @@
     </ItemGroup>
     <ItemGroup>
         <!-- Central package versions -->
-        <PackageVersion Include="Aspire.Hosting" Version="13.1.0-preview.1.25570.2"/>
+        <PackageVersion Include="Aspire.Hosting" Version="13.1.0-preview.1.25570.1"/>
         <PackageVersion Include="Aspire.Hosting.AppHost" Version="13.1.0-preview.1.25570.1"/>
         <PackageVersion Include="Aspire.Hosting.Keycloak" Version="13.1.0-preview.1.25570.1"/>
         <PackageVersion Include="Aspire.Hosting.Yarp" Version="13.1.0-preview.1.25570.1"/>

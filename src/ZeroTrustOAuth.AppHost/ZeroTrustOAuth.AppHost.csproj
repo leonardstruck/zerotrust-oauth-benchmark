@@ -1,4 +1,4 @@
-<Project Sdk="Aspire.AppHost.Sdk/13.1.0-preview.1.25569.7">
+<Project Sdk="Aspire.AppHost.Sdk/13.1.0-preview.1.25570.1">
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
