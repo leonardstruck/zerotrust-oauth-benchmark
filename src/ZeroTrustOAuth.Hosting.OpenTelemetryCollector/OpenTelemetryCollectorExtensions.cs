@@ -25,7 +25,7 @@ public static class OpenTelemetryCollectorExtensions
             .WithImageRegistry(OpenTelemetryCollectorImageTags.Registry)
             .WithArgs("--feature-gates=confmap.enableMergeAppendOption");
 
-        if (settings.EnableAspireOtlpExporter)
+        if (settings.EnableAspireDashboardOtlpExport)
         {
             resourceBuilder
                 .WithOtlpExporter()
