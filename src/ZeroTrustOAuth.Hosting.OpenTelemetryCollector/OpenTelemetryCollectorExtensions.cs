@@ -35,8 +35,8 @@ public static class OpenTelemetryCollectorExtensions
         configure?.Invoke(settings);
 
         IResourceBuilder<OpenTelemetryCollectorResource> resourceBuilder = builder.AddResource(resource)
-            .WithImage(OpenTelemetryCollectorImageTags.Image, OpenTelemetryCollectorImageTags.Tag)
-            .WithImageRegistry(OpenTelemetryCollectorImageTags.Registry)
+            .WithImage(OpenTelemetryCollectorContainerImageTags.Image, OpenTelemetryCollectorContainerImageTags.Tag)
+            .WithImageRegistry(OpenTelemetryCollectorContainerImageTags.Registry)
             .WithArgs("--feature-gates=confmap.enableMergeAppendOption");
 
         if (settings.EnableAspireDashboardOtlpExport)
