@@ -3,6 +3,7 @@ namespace Aspire.Hosting;
 /// <summary>
 ///     Settings that control how the embedded OpenTelemetry Collector is exposed by the hosting components.
 /// </summary>
+[PublicAPI]
 public class OpenTelemetryCollectorSettings
 {
     /// <summary>

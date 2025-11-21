@@ -12,6 +12,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\ZeroTrustOAuth.Hosting.Grafana\ZeroTrustOAuth.Hosting.Grafana.csproj" IsAspireProjectResource="false"/>
         <ProjectReference Include="..\ZeroTrustOAuth.Hosting.OpenTelemetryCollector\ZeroTrustOAuth.Hosting.OpenTelemetryCollector.csproj" IsAspireProjectResource="false"/>
     </ItemGroup>
 

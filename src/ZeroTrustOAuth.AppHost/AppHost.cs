@@ -3,6 +3,8 @@ IDistributedApplicationBuilder builder = DistributedApplication.CreateBuilder(ar
 IResourceBuilder<OpenTelemetryCollectorResource> otlpCollector =
     builder.AddOpenTelemetryCollector("otel-collector");
 
+IResourceBuilder<GrafanaResource> _ = builder.AddGrafana("grafana");
+
 IResourceBuilder<KeycloakResource> identity = builder.AddKeycloak("identity")
     .WithLifetime(ContainerLifetime.Persistent);
 
