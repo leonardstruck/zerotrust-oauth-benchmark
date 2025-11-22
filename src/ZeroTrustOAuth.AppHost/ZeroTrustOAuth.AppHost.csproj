@@ -9,11 +9,21 @@
         <PackageReference Include="Aspire.Hosting.AppHost"/>
         <PackageReference Include="Aspire.Hosting.Keycloak"/>
         <PackageReference Include="Aspire.Hosting.Yarp"/>
+        <PackageReference Include="Scriban"/>
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\ZeroTrustOAuth.Hosting.Grafana\ZeroTrustOAuth.Hosting.Grafana.csproj" IsAspireProjectResource="false"/>
-        <ProjectReference Include="..\ZeroTrustOAuth.Hosting.OpenTelemetryCollector\ZeroTrustOAuth.Hosting.OpenTelemetryCollector.csproj" IsAspireProjectResource="false"/>
+        <EmbeddedResource Update="Hosting\GrafanaAlloy\Resources.resx">
+            <Generator>ResXFileCodeGenerator</Generator>
+            <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
     </ItemGroup>
 
+    <ItemGroup>
+        <Compile Update="Hosting\GrafanaAlloy\Resources.Designer.cs">
+            <DesignTime>True</DesignTime>
+            <AutoGen>True</AutoGen>
+            <DependentUpon>Resources.resx</DependentUpon>
+        </Compile>
+    </ItemGroup>
 </Project>
