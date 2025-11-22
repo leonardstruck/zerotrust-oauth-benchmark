@@ -4,21 +4,11 @@
         <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     </PropertyGroup>
     <ItemGroup>
-        <GlobalPackageReference Include="SonarAnalyzer.CSharp" Version="10.15.0.120848">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </GlobalPackageReference>
-        <GlobalPackageReference Include="Roslynator.Analyzers" Version="4.14.1">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </GlobalPackageReference>
-    </ItemGroup>
-    <ItemGroup>
         <!-- Central package versions -->
         <PackageVersion Include="Aspire.Hosting" Version="13.1.0-preview.1.25570.1"/>
-        <PackageVersion Include="Aspire.Hosting.AppHost" Version="13.1.0-preview.1.25570.1"/>
-        <PackageVersion Include="Aspire.Hosting.Keycloak" Version="13.1.0-preview.1.25570.1"/>
-        <PackageVersion Include="Aspire.Hosting.Yarp" Version="13.1.0-preview.1.25570.1"/>
+        <PackageVersion Include="Aspire.Hosting.AppHost" Version="13.1.0-preview.1.25571.1"/>
+        <PackageVersion Include="Aspire.Hosting.Keycloak" Version="13.1.0-preview.1.25571.1"/>
+        <PackageVersion Include="Aspire.Hosting.Yarp" Version="13.1.0-preview.1.25571.1"/>
         <PackageVersion Include="JetBrains.Annotations" Version="2025.2.2"/>
         <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.0.0"/>
         <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="10.0.0"/>
@@ -27,5 +17,6 @@
         <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.14.0"/>
         <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.14.0"/>
         <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.14.0"/>
+        <PackageVersion Include="Scriban" Version="6.5.1"/>
     </ItemGroup>
 </Project>
