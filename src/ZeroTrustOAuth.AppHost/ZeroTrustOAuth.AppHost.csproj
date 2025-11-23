@@ -1,8 +1,15 @@
-<Project Sdk="Aspire.AppHost.Sdk/13.1.0-preview.1.25569.1">
+<Project Sdk="Aspire.AppHost.Sdk/13.1.0-preview.1.25570.1">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <UserSecretsId>a59ae261-d2dd-4d64-b476-887398eaa756</UserSecretsId>
+  </PropertyGroup>
 
-    <PropertyGroup>
-        <OutputType>Exe</OutputType>
-        <UserSecretsId>a59ae261-d2dd-4d64-b476-887398eaa756</UserSecretsId>
-    </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.AppHost" />
+    <PackageReference Include="Aspire.Hosting.Keycloak" />
+    <PackageReference Include="Aspire.Hosting.Yarp" />
+    <PackageReference Include="Scriban" />
+  </ItemGroup>
+
 
 </Project>

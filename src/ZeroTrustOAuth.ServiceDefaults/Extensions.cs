@@ -17,12 +17,26 @@ namespace ZeroTrustOAuth.ServiceDefaults;
 // Adds common Aspire services: service discovery, resilience, health checks, and OpenTelemetry.
 // This project should be referenced by each service project in your solution.
 // To learn more about using this project, see https://aka.ms/dotnet/aspire/service-defaults
+/// <summary>
+/// Provides extension methods that add common Aspire service defaults to an application.
+/// </summary>
+/// <remarks>
+/// The extensions enable service discovery, resilience, health checks, and OpenTelemetry instrumentation/export.
+/// Reference this project from each service project to apply consistent defaults.
+/// </remarks>
 [PublicAPI]
 public static class ServiceDefaultsExtensions
 {
     private const string HealthEndpointPath = "/health";
     private const string AlivenessEndpointPath = "/alive";
 
+    /// <summary>
+    /// Adds common service defaults to the specified host application builder.
+    /// </summary>
+    /// <typeparam name="TBuilder">The type of the host application builder.</typeparam>
+    /// <param name="builder">The host application builder.</param>
+    /// <returns>The same <typeparamref name="TBuilder"/> instance for chaining.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="builder"/> is <c>null</c>.</exception>
     public static TBuilder AddServiceDefaults<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
     {
         ArgumentNullException.ThrowIfNull(builder);
@@ -49,6 +63,13 @@ public static class ServiceDefaultsExtensions
         return builder;
     }
 
+    /// <summary>
+    /// Configures OpenTelemetry logging, metrics, and tracing for the application.
+    /// </summary>
+    /// <typeparam name="TBuilder">The type of the host application builder.</typeparam>
+    /// <param name="builder">The host application builder.</param>
+    /// <returns>The same <typeparamref name="TBuilder"/> instance for chaining.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="builder"/> is <c>null</c>.</exception>
     public static TBuilder ConfigureOpenTelemetry<TBuilder>(this TBuilder builder)
         where TBuilder : IHostApplicationBuilder
     {
@@ -85,6 +106,13 @@ public static class ServiceDefaultsExtensions
         return builder;
     }
 
+    /// <summary>
+    /// Adds and configures OpenTelemetry exporters based on application configuration.
+    /// </summary>
+    /// <typeparam name="TBuilder">The type of the host application builder.</typeparam>
+    /// <param name="builder">The host application builder.</param>
+    /// <returns>The same <typeparamref name="TBuilder"/> instance for chaining.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="builder"/> is <c>null</c>.</exception>
     public static TBuilder AddOpenTelemetryExporters<TBuilder>(this TBuilder builder)
         where TBuilder : IHostApplicationBuilder
     {
@@ -99,6 +127,13 @@ public static class ServiceDefaultsExtensions
         return builder;
     }
 
+    /// <summary>
+    /// Adds the default health checks used by the application.
+    /// </summary>
+    /// <typeparam name="TBuilder">The type of the host application builder.</typeparam>
+    /// <param name="builder">The host application builder.</param>
+    /// <returns>The same <typeparamref name="TBuilder"/> instance for chaining.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="builder"/> is <c>null</c>.</exception>
     public static TBuilder AddDefaultHealthChecks<TBuilder>(this TBuilder builder)
         where TBuilder : IHostApplicationBuilder
     {
@@ -110,6 +145,15 @@ public static class ServiceDefaultsExtensions
         return builder;
     }
 
+    /// <summary>
+    /// Maps default health check endpoints to the web application.
+    /// </summary>
+    /// <param name="app">The web application.</param>
+    /// <returns>The same <see cref="WebApplication"/> instance for chaining.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="app"/> is <c>null</c>.</exception>
+    /// <remarks>
+    /// Endpoints are only mapped in development environments to avoid exposing health information in production.
+    /// </remarks>
     public static WebApplication MapDefaultEndpoints(this WebApplication app)
     {
         ArgumentNullException.ThrowIfNull(app);
