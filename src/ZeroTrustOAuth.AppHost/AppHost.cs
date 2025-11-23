@@ -1,12 +1,23 @@
+#pragma warning disable ASPIRECONTAINERSHELLEXECUTION001
 using ZeroTrustOAuth.AppHost.Hosting.Grafana;
+using ZeroTrustOAuth.AppHost.Hosting.OpenTofu;
+
 
 IDistributedApplicationBuilder builder = DistributedApplication.CreateBuilder(args);
 
-var grafana = builder.AddGrafanaStack("grafana").WithLifetime(ContainerLifetime.Persistent);
+var grafana = builder
+    .AddGrafanaStack("grafana");
+
 
 IResourceBuilder<KeycloakResource> identity = builder
-    .AddKeycloak("identity")
-    .WithLifetime(ContainerLifetime.Persistent);
+    .AddKeycloak("identity");
+
+builder.AddOpenTofuProvisioner("identity-provisioner", "./terraform/identity")
+    .WithParentRelationship(identity)
+    .WaitFor(identity)
+    .WithVariable("keycloak_url", identity.GetEndpoint("http"))
+    .WithVariable("keycloak_password", identity.Resource.AdminPasswordParameter);
+
 
 builder
     .AddYarp("gateway")
@@ -14,9 +25,6 @@ builder
     {
         yarp.AddRoute("identity/{**catch-all}", identity);
     })
-    .WithLifetime(ContainerLifetime.Persistent)
     .WithOtlpRouting(grafana);
 
-DistributedApplication app = builder.Build();
-
-await app.RunAsync();
+await builder.Build().RunAsync();
