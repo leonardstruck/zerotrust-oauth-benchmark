@@ -23,11 +23,11 @@ datasources:
       maxLines: 1000
       tlsSkipVerify: true
   
-  - name: Prometheus
+  - name: Mimir
     type: prometheus
     access: proxy
-    url: ${PROMETHEUS_URL}
-    uid: prom
+    url: ${MIMIR_URL}/prometheus
+    uid: mimir
     editable: false
     jsonData:
       httpMethod: GET

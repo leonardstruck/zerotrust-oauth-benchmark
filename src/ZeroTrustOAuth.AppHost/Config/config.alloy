@@ -60,11 +60,6 @@ otelcol.exporter.otlp "aspire" {
 otelcol.exporter.otlp "tempo" {
 	client {
 		endpoint = sys.env("TEMPO_OTLP_ENDPOINT")
-
-		tls {
-			ca_file  = sys.env("TLS_CERT_PATH")
-			insecure = false
-		}
 	}
 }
 
@@ -75,23 +70,15 @@ otelcol.exporter.loki "default" {
 loki.write "default" {
 	endpoint {
 		url = sys.env("LOKI_URL") + "/loki/api/v1/push"
-			headers = {
-				"X-Scope-OrgID" = "demo",
-			}
-
-		tls_config {
-			ca_file              = sys.env("TLS_CERT_PATH")
-			insecure_skip_verify = false
-		}
 	}
 }
 
 otelcol.exporter.prometheus "convert" {
-	forward_to = [prometheus.remote_write.prom.receiver]
+	forward_to = [prometheus.remote_write.mimir.receiver]
 }
 
-prometheus.remote_write "prom" {
+prometheus.remote_write "mimir" {
 	endpoint {
-		url = sys.env("PROMETHEUS_URL") + "/api/v1/write"
+		url = sys.env("MIMIR_URL") + "/api/v1/push"
 	}
 }
