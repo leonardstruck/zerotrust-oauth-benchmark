@@ -67,3 +67,31 @@ otelcol.exporter.otlp "tempo" {
 		}
 	}
 }
+
+otelcol.exporter.loki "default" {
+	forward_to = [loki.write.default.receiver]
+}
+
+loki.write "default" {
+	endpoint {
+		url = sys.env("LOKI_URL") + "/loki/api/v1/push"
+			headers = {
+				"X-Scope-OrgID" = "demo",
+			}
+
+		tls_config {
+			ca_file              = sys.env("TLS_CERT_PATH")
+			insecure_skip_verify = false
+		}
+	}
+}
+
+otelcol.exporter.prometheus "convert" {
+	forward_to = [prometheus.remote_write.prom.receiver]
+}
+
+prometheus.remote_write "prom" {
+	endpoint {
+		url = sys.env("PROMETHEUS_URL") + "/api/v1/write"
+	}
+}
