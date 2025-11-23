@@ -12,3 +12,23 @@ datasources:
       tlsSkipVerify: true
       nodeGraph:
         enabled: true
+  
+  - name: Loki
+    type: loki
+    access: proxy
+    url: ${LOKI_URL}
+    uid: loki
+    editable: false
+    jsonData:
+      maxLines: 1000
+      tlsSkipVerify: true
+  
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: ${PROMETHEUS_URL}
+    uid: prom
+    editable: false
+    jsonData:
+      httpMethod: GET
+      tlsSkipVerify: true
