@@ -1,3 +1,0 @@
-tls_server_config:
-  cert_file: "$TLS_CERT_PATH"
-  key_file: "$TLS_KEY_PATH"
