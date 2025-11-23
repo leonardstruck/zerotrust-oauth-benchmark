@@ -1,3 +1,12 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace ZeroTrustOAuth.AppHost.Hosting.OpenTofu;
 
-public class OpenTofuProvisionerResource(string name, string? entrypoint = null) : ContainerResource(name, entrypoint);
+[Experimental("ASPIRECONTAINERSHELLEXECUTION001")]
+public class OpenTofuProvisionerResource : ContainerResource
+{
+    public OpenTofuProvisionerResource(string name) : base(name)
+    {
+        ShellExecution = true;
+    }
+};

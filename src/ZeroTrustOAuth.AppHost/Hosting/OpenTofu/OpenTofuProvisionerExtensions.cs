@@ -2,23 +2,18 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace ZeroTrustOAuth.AppHost.Hosting.OpenTofu;
 
+[Experimental("ASPIRECONTAINERSHELLEXECUTION001")]
 internal static class OpenTofuProvisionerExtensions
 {
     private const string VariablePrefix = "TF_VAR_";
     private const string ContainerWorkingDirectory = "/workspace";
-    private const string OpenTofuImage = "ghcr.io/opentofu/opentofu:1.10.7";
 
-    [Experimental("ASPIRECONTAINERSHELLEXECUTION001")]
     public static IResourceBuilder<OpenTofuProvisionerResource> AddOpenTofuProvisioner(
         this IDistributedApplicationBuilder builder, [ResourceName] string name, string path)
     {
-        var resource = new OpenTofuProvisionerResource(name) { ShellExecution = true };
-
-        var resourceBuilder = builder.AddResource(resource);
-
-
-        resourceBuilder
-            .WithImage(OpenTofuImage)
+        return builder.AddResource(new OpenTofuProvisionerResource(name))
+            .WithImage(OpenTofuProvisionerContainerImageTags.Image, OpenTofuProvisionerContainerImageTags.Tag)
+            .WithImageRegistry(OpenTofuProvisionerContainerImageTags.Registry)
             .WithEnvironment("TF_IN_AUTOMATION", "true")
             .WithEnvironment("TF_INPUT", "false")
             .WithEnvironment("OTEL_TRACES_EXPORTER", "otlp")
@@ -29,8 +24,6 @@ internal static class OpenTofuProvisionerExtensions
             .WithArgs("&&", "tofu plan")
             .WithArgs("&&", "tofu apply", "-auto-approve")
             .WithOtlpExporter();
-
-        return resourceBuilder;
     }
 
     extension<T>(IResourceBuilder<T> builder) where T : OpenTofuProvisionerResource
