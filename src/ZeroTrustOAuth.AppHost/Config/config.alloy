@@ -7,7 +7,7 @@ http {
 
 otelcol.receiver.otlp "default" {
 	grpc {
-		endpoint         = "0.0.0.0:" + sys.env("OTLP_PORT")
+		endpoint         = "0.0.0.0:4317"
 		include_metadata = true
 
 		tls {
@@ -17,7 +17,7 @@ otelcol.receiver.otlp "default" {
 	}
 
 	http {
-		endpoint         = "0.0.0.0:" + sys.env("OTLP_HTTP_PORT")
+		endpoint         = "0.0.0.0:4318"
 		include_metadata = true
 
 		tls {
@@ -39,7 +39,7 @@ otelcol.processor.batch "default" {
 	output {
 		metrics = [otelcol.exporter.otlp.aspire.input]
 		logs    = [otelcol.exporter.otlp.aspire.input]
-		traces  = [otelcol.exporter.otlp.aspire.input]
+		traces  = [otelcol.exporter.otlp.aspire.input, otelcol.exporter.otlp.tempo.input]
 	}
 }
 
@@ -54,5 +54,16 @@ otelcol.exporter.otlp "aspire" {
 	client {
 		endpoint = sys.env("OTEL_EXPORTER_OTLP_ENDPOINT")
 		auth     = otelcol.auth.headers.aspire.handler
+	}
+}
+
+otelcol.exporter.otlp "tempo" {
+	client {
+		endpoint = sys.env("TEMPO_OTLP_ENDPOINT")
+
+		tls {
+			ca_file  = sys.env("TLS_CERT_PATH")
+			insecure = false
+		}
 	}
 }
