@@ -84,8 +84,8 @@ internal static class GrafanaStackExtensions
 
                 var endpoint = otlpAnnotation?.RequiredProtocol switch
                 {
-                    OtlpProtocol.HttpProtobuf => grafanaBuilder.Resource.OtlpEndpoint,
-                    OtlpProtocol.Grpc => grafanaBuilder.Resource.OtlpHttpEndpoint,
+                    OtlpProtocol.HttpProtobuf => grafanaBuilder.Resource.OtlpHttpEndpoint,
+                    OtlpProtocol.Grpc => grafanaBuilder.Resource.OtlpEndpoint,
                     _ => grafanaBuilder.Resource.OtlpEndpoint,
                 };
 

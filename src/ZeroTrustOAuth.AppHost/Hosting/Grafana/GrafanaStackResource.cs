@@ -1,4 +1,3 @@
-using System;
 
 namespace ZeroTrustOAuth.AppHost.Hosting.Grafana;
 

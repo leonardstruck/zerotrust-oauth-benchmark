@@ -11,18 +11,5 @@
     <PackageReference Include="Scriban" />
   </ItemGroup>
 
-  <ItemGroup>
-    <EmbeddedResource Update="Hosting\GrafanaAlloy\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-  </ItemGroup>
 
-  <ItemGroup>
-    <Compile Update="Hosting\GrafanaAlloy\Resources.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
-  </ItemGroup>
 </Project>
