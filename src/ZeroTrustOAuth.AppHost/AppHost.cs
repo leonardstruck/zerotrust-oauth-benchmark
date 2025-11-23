@@ -12,7 +12,7 @@ var grafana = builder
 IResourceBuilder<KeycloakResource> identity = builder
     .AddKeycloak("identity");
 
-builder.AddOpenTofuProvisioner("identity-provisioner", "./terraform/identity")
+builder.AddOpenTofuProvisioner("identity-provisioner", "./Provisioning/identity")
     .WithParentRelationship(identity)
     .WaitFor(identity)
     .WithVariable("keycloak_url", identity.GetEndpoint("http"))

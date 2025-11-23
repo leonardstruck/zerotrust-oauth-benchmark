@@ -18,4 +18,5 @@ variable "keycloak_username" {
 variable "keycloak_password" {
   description = "The password for Keycloak authentication."
   type        = string
+  sensitive   = true
 }
