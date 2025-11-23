@@ -6,11 +6,12 @@ using ZeroTrustOAuth.AppHost.Hosting.OpenTofu;
 IDistributedApplicationBuilder builder = DistributedApplication.CreateBuilder(args);
 
 var grafana = builder
-    .AddGrafanaStack("grafana");
-
+    .AddGrafanaStack("grafana")
+    .WithLifetime(ContainerLifetime.Persistent);
 
 IResourceBuilder<KeycloakResource> identity = builder
-    .AddKeycloak("identity");
+    .AddKeycloak("identity")
+    .WithLifetime(ContainerLifetime.Persistent);
 
 builder.AddOpenTofuProvisioner("identity-provisioner", "./Provisioning/identity")
     .WithParentRelationship(identity)
@@ -25,6 +26,7 @@ builder
     {
         yarp.AddRoute("identity/{**catch-all}", identity);
     })
-    .WithOtlpRouting(grafana);
+    .WithOtlpRouting(grafana)
+    .WithLifetime(ContainerLifetime.Persistent);
 
 await builder.Build().RunAsync();
