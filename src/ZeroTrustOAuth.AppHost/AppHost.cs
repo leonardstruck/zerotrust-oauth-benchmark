@@ -20,7 +20,7 @@ IResourceBuilder<ContainerResource> loki = builder
     });
 
 IResourceBuilder<ContainerResource> mimir = builder
-    .AddContainer("mimir", "grafana/mimir:2.14.1")
+    .AddContainer("mimir", "grafana/mimir:3.0.0")
     .WithHttpsEndpoint(targetPort: 9009, name: "http")
     .WithBindMount("./Config/mimir.yaml", "/etc/mimir/mimir.yaml", true)
     .WithContainerFiles("/data", [new ContainerDirectory() { Name = "mimir", Owner = 10001 }])
