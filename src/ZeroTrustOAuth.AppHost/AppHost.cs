@@ -5,6 +5,34 @@ IDistributedApplicationBuilder builder = DistributedApplication.CreateBuilder(ar
 
 #region Grafana (LGTM) Stack
 
+// Loki - log aggregation system
+IResourceBuilder<ContainerResource> loki = builder
+    .AddContainer("loki", "grafana/loki:3.5.8")
+    .WithHttpsEndpoint(targetPort: 3100, name: "http")
+    .WithArgs("-config.file=/etc/loki/loki.yaml", "-config.expand-env=true")
+    .WithBindMount("./Config/loki.yaml", "/etc/loki/loki.yaml", true)
+    .WithCertificateKeyPairConfiguration(context =>
+    {
+        context.EnvironmentVariables["TLS_CERT_PATH"] = context.CertificatePath;
+        context.EnvironmentVariables["TLS_KEY_PATH"] = context.KeyPath;
+
+        return Task.CompletedTask;
+    });
+
+IResourceBuilder<ContainerResource> prometheus = builder
+    .AddContainer("prometheus", "prom/prometheus:v3.7.3")
+    .WithHttpEndpoint(targetPort: 9090, name: "http")
+    .WithBindMount("./Config/prometheus.yml", "/etc/prometheus/prometheus.yml", true)
+    .WithContainerFiles("/data", [new ContainerDirectory() { Name = "prometheus", Owner = 65534 }])
+    .WithArgs(
+        "--config.file=/etc/prometheus/prometheus.yml",
+        "--web.enable-remote-write-receiver",
+        "--web.enable-otlp-receiver",
+        "--enable-feature=exemplar-storage",
+        "--enable-feature=native-histograms",
+        "--storage.tsdb.path=/data/prometheus"
+    );
+
 // Tempo - distributed tracing backend
 IResourceBuilder<ContainerResource> tempo = builder
     .AddContainer("tempo", "grafana/tempo:2.9.0")
@@ -32,6 +60,8 @@ IResourceBuilder<ContainerResource> grafana = builder
         true
     )
     .WithEnvironment("TEMPO_URL", tempo.GetEndpoint("http"))
+    .WithEnvironment("LOKI_URL", loki.GetEndpoint("http"))
+    .WithEnvironment("PROMETHEUS_URL", prometheus.GetEndpoint("http"))
     .WithEnvironment("GF_AUTH_ANONYMOUS_ENABLED", "true")
     .WithEnvironment("GF_AUTH_ANONYMOUS_ORG_ROLE", "Admin")
     .WithEnvironment("GF_AUTH_DISABLE_LOGIN_FORM", "true")
@@ -43,7 +73,9 @@ IResourceBuilder<ContainerResource> grafana = builder
 
         return Task.CompletedTask;
     })
-    .WaitFor(tempo);
+    .WaitFor(tempo)
+    .WaitFor(loki)
+    .WaitFor(prometheus);
 
 // Alloy - telemetry pipeline (collector & agents)
 IResourceBuilder<ContainerResource> alloy = builder
@@ -63,7 +95,11 @@ IResourceBuilder<ContainerResource> alloy = builder
     })
     .WithOtlpExporter()
     .WithEnvironment("TEMPO_OTLP_ENDPOINT", tempo.GetEndpoint("otlp"))
-    .WaitFor(tempo);
+    .WithEnvironment("LOKI_URL", loki.GetEndpoint("http"))
+    .WithEnvironment("PROMETHEUS_URL", prometheus.GetEndpoint("http"))
+    .WaitFor(tempo)
+    .WaitFor(loki)
+    .WaitFor(prometheus);
 
 EndpointReference otlpEndpoint = alloy.GetEndpoint("otlp");
 
