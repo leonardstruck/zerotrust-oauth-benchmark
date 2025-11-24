@@ -5,23 +5,23 @@ using Microsoft.EntityFrameworkCore;
 
 using ZeroTrustOAuth.Inventory.Data;
 
-namespace ZeroTrustOAuth.Inventory.Features.Products.GetLowStock;
+namespace ZeroTrustOAuth.Inventory.Features.Products;
 
 [UsedImplicitly]
-public class GetLowStockProducts : ICarterModule
+public class GetProductsByCategory : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapGet("/products/low-stock", Handle)
-            .WithName("GetLowStockProducts")
-            .WithSummary("Get all products with stock below reorder level")
+        app.MapGet("/products/category/{category}", Handle)
+            .WithName("GetProductsByCategory")
+            .WithSummary("Get all products in a specific category")
             .WithTags("Products");
     }
 
-    private static async Task<Ok<Response>> Handle(InventoryDbContext db, CancellationToken ct)
+    private static async Task<Ok<Response>> Handle(string category, InventoryDbContext db, CancellationToken ct)
     {
         var products = await db.Products
-            .Where(p => p.QuantityInStock <= p.ReorderLevel)
+            .Where(p => p.Category == category)
             .Select(p => new ProductDto(
                 p.Id,
                 p.Name,

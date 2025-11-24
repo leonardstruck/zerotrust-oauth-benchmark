@@ -1,35 +1,43 @@
 using Carter;
 
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.EntityFrameworkCore;
+using ErrorOr;
 
 using ZeroTrustOAuth.Inventory.Data;
 using ZeroTrustOAuth.Inventory.Domain;
+using ZeroTrustOAuth.ServiceDefaults;
 
-namespace ZeroTrustOAuth.Inventory.Features.Products.GetBySku;
+namespace ZeroTrustOAuth.Inventory.Features.Products;
 
 [UsedImplicitly]
-public class GetProductBySku : ICarterModule
+public class AdjustStock : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapGet("/products/sku/{sku}", Handle)
-            .WithName("GetProductBySku")
-            .WithSummary("Get a specific product by SKU")
-            .WithTags("Products")
-            .Produces(StatusCodes.Status404NotFound);
+        app.MapPatch("/products/{id}/stock",
+                Handle)
+            .WithName("AdjustStock")
+            .WithSummary("Adjust the stock quantity for a product")
+            .WithTags("Products");
     }
 
-    private static async Task<Results<Ok<Response>, NotFound>> Handle(string sku, InventoryDbContext db,
+    private static async Task<IResult> Handle(string id, Command command, InventoryDbContext db,
         CancellationToken ct)
     {
-        Product? product = await db.Products
-            .FirstOrDefaultAsync(p => p.Sku == sku, ct);
+        Product? product = await db.Products.FindAsync([id], ct);
 
         if (product is null)
         {
-            return TypedResults.NotFound();
+            return Results.NotFound();
         }
+
+        ErrorOr<Success> adjustResult = product.AdjustStock(command.Quantity);
+
+        if (adjustResult.IsError)
+        {
+            return adjustResult.ToProblem();
+        }
+
+        await db.SaveChangesAsync(ct);
 
         var response = new Response(
             product.Id,
@@ -43,8 +51,10 @@ public class GetProductBySku : ICarterModule
             product.CreatedAt,
             product.UpdatedAt);
 
-        return TypedResults.Ok(response);
+        return Results.Ok(response);
     }
+
+    public sealed record Command(int Quantity, string? Reason);
 
     public sealed record Response(
         string Id,

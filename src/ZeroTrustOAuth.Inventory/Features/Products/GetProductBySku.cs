@@ -1,39 +1,35 @@
 using Carter;
 
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.EntityFrameworkCore;
 
 using ZeroTrustOAuth.Inventory.Data;
 using ZeroTrustOAuth.Inventory.Domain;
 
-namespace ZeroTrustOAuth.Inventory.Features.Products.AdjustStock;
+namespace ZeroTrustOAuth.Inventory.Features.Products;
 
 [UsedImplicitly]
-public class AdjustStock : ICarterModule
+public class GetProductBySku : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPatch("/products/{id}/stock",
-                Handle)
-            .WithName("AdjustStock")
-            .WithSummary("Adjust the stock quantity for a product")
+        app.MapGet("/products/sku/{sku}", Handle)
+            .WithName("GetProductBySku")
+            .WithSummary("Get a specific product by SKU")
             .WithTags("Products")
             .Produces(StatusCodes.Status404NotFound);
     }
 
-    private static async Task<Results<Ok<Response>, NotFound>> Handle(string id, Command command, InventoryDbContext db,
+    private static async Task<Results<Ok<Response>, NotFound>> Handle(string sku, InventoryDbContext db,
         CancellationToken ct)
     {
-        Product? product = await db.Products.FindAsync([id], ct);
+        Product? product = await db.Products
+            .FirstOrDefaultAsync(p => p.Sku == sku, ct);
 
         if (product is null)
         {
             return TypedResults.NotFound();
         }
-
-        product.QuantityInStock += command.Quantity;
-        product.UpdatedAt = DateTime.UtcNow;
-
-        await db.SaveChangesAsync(ct);
 
         var response = new Response(
             product.Id,
@@ -49,8 +45,6 @@ public class AdjustStock : ICarterModule
 
         return TypedResults.Ok(response);
     }
-
-    public sealed record Command(int Quantity, string? Reason);
 
     public sealed record Response(
         string Id,
