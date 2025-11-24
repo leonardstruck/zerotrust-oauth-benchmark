@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using ZeroTrustOAuth.Inventory.Data;
 using ZeroTrustOAuth.Inventory.Domain;
 
-namespace ZeroTrustOAuth.Inventory.Features.Products.Delete;
+namespace ZeroTrustOAuth.Inventory.Features.Products;
 
 [UsedImplicitly]
 public class DeleteProduct : ICarterModule
