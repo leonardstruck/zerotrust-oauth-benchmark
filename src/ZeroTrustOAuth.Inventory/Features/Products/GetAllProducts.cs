@@ -1,6 +1,7 @@
 using Carter;
 
-using Microsoft.AspNetCore.Http.HttpResults;
+using Facet.Extensions;
+
 using Microsoft.EntityFrameworkCore;
 
 using ZeroTrustOAuth.Inventory.Data;
@@ -18,36 +19,14 @@ public class GetAllProducts : ICarterModule
             .WithTags("Products");
     }
 
-    private static async Task<Ok<Response>> Handle(InventoryDbContext db, CancellationToken ct)
+    private static async Task<IResult> Handle(HttpContext context, InventoryDbContext db, CancellationToken ct)
     {
-        var products = await db.Products
-            .Select(p => new ProductDto(
-                p.Id,
-                p.Name,
-                p.Description,
-                p.Sku,
-                p.QuantityInStock,
-                p.ReorderLevel,
-                p.Category,
-                p.SupplierId,
-                p.CreatedAt,
-                p.UpdatedAt))
+        List<ProductDto> products = await db.Products
+            .SelectFacet<ProductDto>()
             .ToListAsync(ct);
 
-        return TypedResults.Ok(new Response(products));
+        return TypedResults.Ok(new Response<ProductDto>(products));
     }
 
-    public sealed record Response(IEnumerable<ProductDto> Products);
-
-    public sealed record ProductDto(
-        string Id,
-        string Name,
-        string? Description,
-        string Sku,
-        int QuantityInStock,
-        int ReorderLevel,
-        string? Category,
-        string? SupplierId,
-        DateTime CreatedAt,
-        DateTime UpdatedAt);
+    public sealed record Response<T>(IEnumerable<T> Products);
 }

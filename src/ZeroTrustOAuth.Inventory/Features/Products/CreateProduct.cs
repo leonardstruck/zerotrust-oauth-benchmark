@@ -42,7 +42,7 @@ public class CreateProduct : ICarterModule
             return productResult.ToProblem();
         }
 
-        var product = productResult.Value;
+        Product product = productResult.Value;
         db.Products.Add(product);
 
         try
@@ -57,7 +57,7 @@ public class CreateProduct : ICarterModule
             });
         }
 
-        var response = new Response(
+        Response response = new(
             product.Id,
             product.Name,
             product.Description,

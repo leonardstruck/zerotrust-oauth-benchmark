@@ -61,7 +61,7 @@ public class UpdateProduct : ICarterModule
             });
         }
 
-        var response = new Response(
+        Response response = new(
             product.Id,
             product.Name,
             product.Description,

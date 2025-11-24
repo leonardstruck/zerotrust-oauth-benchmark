@@ -1,9 +1,10 @@
 using Carter;
 
-using Microsoft.AspNetCore.Http.HttpResults;
+using Facet.Extensions;
+
+using Microsoft.EntityFrameworkCore;
 
 using ZeroTrustOAuth.Inventory.Data;
-using ZeroTrustOAuth.Inventory.Domain;
 
 namespace ZeroTrustOAuth.Inventory.Features.Products;
 
@@ -19,40 +20,19 @@ public class GetProductById : ICarterModule
             .Produces(StatusCodes.Status404NotFound);
     }
 
-    private static async Task<Results<Ok<Response>, NotFound>> Handle(string id, InventoryDbContext db,
+    private static async Task<IResult> Handle(
+        string id,
+        HttpContext context,
+        InventoryDbContext db,
         CancellationToken ct)
     {
-        Product? product = await db.Products.FindAsync([id], ct);
+        ProductDto? product = await db.Products
+            .Where(p => p.Id == id)
+            .SelectFacet<ProductDto>()
+            .FirstOrDefaultAsync(ct);
 
-        if (product is null)
-        {
-            return TypedResults.NotFound();
-        }
-
-        var response = new Response(
-            product.Id,
-            product.Name,
-            product.Description,
-            product.Sku,
-            product.QuantityInStock,
-            product.ReorderLevel,
-            product.Category,
-            product.SupplierId,
-            product.CreatedAt,
-            product.UpdatedAt);
-
-        return TypedResults.Ok(response);
+        return product is null
+            ? TypedResults.NotFound()
+            : TypedResults.Ok(product);
     }
-
-    public sealed record Response(
-        string Id,
-        string Name,
-        string? Description,
-        string Sku,
-        int QuantityInStock,
-        int ReorderLevel,
-        string? Category,
-        string? SupplierId,
-        DateTime CreatedAt,
-        DateTime UpdatedAt);
 }
