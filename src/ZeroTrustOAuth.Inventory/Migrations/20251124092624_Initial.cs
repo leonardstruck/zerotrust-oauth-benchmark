@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace ZeroTrustOAuth.Inventory.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -38,11 +38,11 @@ namespace ZeroTrustOAuth.Inventory.Migrations
                 columns: new[] { "Id", "Category", "CreatedAt", "Description", "Name", "QuantityInStock", "ReorderLevel", "Sku", "SupplierId", "UpdatedAt" },
                 values: new object[,]
                 {
-                    { "1", "Electronics", new DateTime(2025, 10, 25, 6, 47, 38, 445, DateTimeKind.Utc).AddTicks(9350), "High-performance laptop for business", "Laptop", 25, 10, "LAP-001", "SUP-001", new DateTime(2025, 10, 25, 6, 47, 38, 445, DateTimeKind.Utc).AddTicks(9500) },
-                    { "2", "Electronics", new DateTime(2025, 11, 4, 6, 47, 38, 445, DateTimeKind.Utc).AddTicks(9630), "Ergonomic wireless mouse", "Wireless Mouse", 150, 50, "MOU-001", "SUP-002", new DateTime(2025, 11, 4, 6, 47, 38, 445, DateTimeKind.Utc).AddTicks(9630) },
-                    { "3", "Furniture", new DateTime(2025, 11, 9, 6, 47, 38, 445, DateTimeKind.Utc).AddTicks(9630), "Comfortable ergonomic office chair", "Office Chair", 8, 10, "CHR-001", "SUP-003", new DateTime(2025, 11, 9, 6, 47, 38, 445, DateTimeKind.Utc).AddTicks(9630) },
-                    { "4", "Electronics", new DateTime(2025, 10, 30, 6, 47, 38, 445, DateTimeKind.Utc).AddTicks(9630), "4K Ultra HD monitor", "Monitor 27\"", 40, 15, "MON-001", "SUP-001", new DateTime(2025, 10, 30, 6, 47, 38, 445, DateTimeKind.Utc).AddTicks(9630) },
-                    { "5", "Office Supplies", new DateTime(2025, 11, 14, 6, 47, 38, 445, DateTimeKind.Utc).AddTicks(9630), "LED desk lamp with adjustable brightness", "Desk Lamp", 5, 20, "LMP-001", "SUP-002", new DateTime(2025, 11, 14, 6, 47, 38, 445, DateTimeKind.Utc).AddTicks(9630) }
+                    { "1", "Electronics", new DateTime(2024, 10, 25, 0, 0, 0, 0, DateTimeKind.Utc), "High-performance laptop for business", "Laptop", 25, 10, "LAP-001", "SUP-001", new DateTime(2024, 10, 25, 0, 0, 0, 0, DateTimeKind.Utc) },
+                    { "2", "Electronics", new DateTime(2024, 11, 4, 0, 0, 0, 0, DateTimeKind.Utc), "Ergonomic wireless mouse", "Wireless Mouse", 150, 50, "MOU-001", "SUP-002", new DateTime(2024, 11, 4, 0, 0, 0, 0, DateTimeKind.Utc) },
+                    { "3", "Furniture", new DateTime(2024, 11, 9, 0, 0, 0, 0, DateTimeKind.Utc), "Comfortable ergonomic office chair", "Office Chair", 8, 10, "CHR-001", "SUP-003", new DateTime(2024, 11, 9, 0, 0, 0, 0, DateTimeKind.Utc) },
+                    { "4", "Electronics", new DateTime(2024, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc), "4K Ultra HD monitor", "Monitor 27\"", 40, 15, "MON-001", "SUP-001", new DateTime(2024, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc) },
+                    { "5", "Office Supplies", new DateTime(2024, 11, 14, 0, 0, 0, 0, DateTimeKind.Utc), "LED desk lamp with adjustable brightness", "Desk Lamp", 5, 20, "LMP-001", "SUP-002", new DateTime(2024, 11, 14, 0, 0, 0, 0, DateTimeKind.Utc) }
                 });
 
             migrationBuilder.CreateIndex(

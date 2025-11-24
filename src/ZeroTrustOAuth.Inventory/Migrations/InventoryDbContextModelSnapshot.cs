@@ -76,66 +76,66 @@ namespace ZeroTrustOAuth.Inventory.Migrations
                         {
                             Id = "1",
                             Category = "Electronics",
-                            CreatedAt = new DateTime(2025, 10, 25, 6, 47, 38, 445, DateTimeKind.Utc).AddTicks(9350),
+                            CreatedAt = new DateTime(2024, 10, 25, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "High-performance laptop for business",
                             Name = "Laptop",
                             QuantityInStock = 25,
                             ReorderLevel = 10,
                             Sku = "LAP-001",
                             SupplierId = "SUP-001",
-                            UpdatedAt = new DateTime(2025, 10, 25, 6, 47, 38, 445, DateTimeKind.Utc).AddTicks(9500)
+                            UpdatedAt = new DateTime(2024, 10, 25, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
                         {
                             Id = "2",
                             Category = "Electronics",
-                            CreatedAt = new DateTime(2025, 11, 4, 6, 47, 38, 445, DateTimeKind.Utc).AddTicks(9630),
+                            CreatedAt = new DateTime(2024, 11, 4, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Ergonomic wireless mouse",
                             Name = "Wireless Mouse",
                             QuantityInStock = 150,
                             ReorderLevel = 50,
                             Sku = "MOU-001",
                             SupplierId = "SUP-002",
-                            UpdatedAt = new DateTime(2025, 11, 4, 6, 47, 38, 445, DateTimeKind.Utc).AddTicks(9630)
+                            UpdatedAt = new DateTime(2024, 11, 4, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
                         {
                             Id = "3",
                             Category = "Furniture",
-                            CreatedAt = new DateTime(2025, 11, 9, 6, 47, 38, 445, DateTimeKind.Utc).AddTicks(9630),
+                            CreatedAt = new DateTime(2024, 11, 9, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Comfortable ergonomic office chair",
                             Name = "Office Chair",
                             QuantityInStock = 8,
                             ReorderLevel = 10,
                             Sku = "CHR-001",
                             SupplierId = "SUP-003",
-                            UpdatedAt = new DateTime(2025, 11, 9, 6, 47, 38, 445, DateTimeKind.Utc).AddTicks(9630)
+                            UpdatedAt = new DateTime(2024, 11, 9, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
                         {
                             Id = "4",
                             Category = "Electronics",
-                            CreatedAt = new DateTime(2025, 10, 30, 6, 47, 38, 445, DateTimeKind.Utc).AddTicks(9630),
+                            CreatedAt = new DateTime(2024, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "4K Ultra HD monitor",
                             Name = "Monitor 27\"",
                             QuantityInStock = 40,
                             ReorderLevel = 15,
                             Sku = "MON-001",
                             SupplierId = "SUP-001",
-                            UpdatedAt = new DateTime(2025, 10, 30, 6, 47, 38, 445, DateTimeKind.Utc).AddTicks(9630)
+                            UpdatedAt = new DateTime(2024, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
                         {
                             Id = "5",
                             Category = "Office Supplies",
-                            CreatedAt = new DateTime(2025, 11, 14, 6, 47, 38, 445, DateTimeKind.Utc).AddTicks(9630),
+                            CreatedAt = new DateTime(2024, 11, 14, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "LED desk lamp with adjustable brightness",
                             Name = "Desk Lamp",
                             QuantityInStock = 5,
                             ReorderLevel = 20,
                             Sku = "LMP-001",
                             SupplierId = "SUP-002",
-                            UpdatedAt = new DateTime(2025, 11, 14, 6, 47, 38, 445, DateTimeKind.Utc).AddTicks(9630)
+                            UpdatedAt = new DateTime(2024, 11, 14, 0, 0, 0, 0, DateTimeKind.Utc)
                         });
                 });
 #pragma warning restore 612, 618

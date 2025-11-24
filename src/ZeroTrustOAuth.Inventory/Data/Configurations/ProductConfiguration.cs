@@ -47,8 +47,8 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
             "SUP-001"
         ).Value;
         laptop.Id = "1";
-        laptop.CreatedAt = DateTime.UtcNow.AddDays(-30);
-        laptop.UpdatedAt = DateTime.UtcNow.AddDays(-30);
+        laptop.CreatedAt = new DateTime(2024, 10, 25, 0, 0, 0, DateTimeKind.Utc);
+        laptop.UpdatedAt = new DateTime(2024, 10, 25, 0, 0, 0, DateTimeKind.Utc);
 
         var mouse = Product.Create(
             "Wireless Mouse",
@@ -60,8 +60,8 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
             "SUP-002"
         ).Value;
         mouse.Id = "2";
-        mouse.CreatedAt = DateTime.UtcNow.AddDays(-20);
-        mouse.UpdatedAt = DateTime.UtcNow.AddDays(-20);
+        mouse.CreatedAt = new DateTime(2024, 11, 4, 0, 0, 0, DateTimeKind.Utc);
+        mouse.UpdatedAt = new DateTime(2024, 11, 4, 0, 0, 0, DateTimeKind.Utc);
 
         var chair = Product.Create(
             "Office Chair",
@@ -73,8 +73,8 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
             "SUP-003"
         ).Value;
         chair.Id = "3";
-        chair.CreatedAt = DateTime.UtcNow.AddDays(-15);
-        chair.UpdatedAt = DateTime.UtcNow.AddDays(-15);
+        chair.CreatedAt = new DateTime(2024, 11, 9, 0, 0, 0, DateTimeKind.Utc);
+        chair.UpdatedAt = new DateTime(2024, 11, 9, 0, 0, 0, DateTimeKind.Utc);
 
         var monitor = Product.Create(
             "Monitor 27\"",
@@ -86,8 +86,8 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
             "SUP-001"
         ).Value;
         monitor.Id = "4";
-        monitor.CreatedAt = DateTime.UtcNow.AddDays(-25);
-        monitor.UpdatedAt = DateTime.UtcNow.AddDays(-25);
+        monitor.CreatedAt = new DateTime(2024, 10, 30, 0, 0, 0, DateTimeKind.Utc);
+        monitor.UpdatedAt = new DateTime(2024, 10, 30, 0, 0, 0, DateTimeKind.Utc);
 
         var lamp = Product.Create(
             "Desk Lamp",
@@ -99,8 +99,8 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
             "SUP-002"
         ).Value;
         lamp.Id = "5";
-        lamp.CreatedAt = DateTime.UtcNow.AddDays(-10);
-        lamp.UpdatedAt = DateTime.UtcNow.AddDays(-10);
+        lamp.CreatedAt = new DateTime(2024, 11, 14, 0, 0, 0, DateTimeKind.Utc);
+        lamp.UpdatedAt = new DateTime(2024, 11, 14, 0, 0, 0, DateTimeKind.Utc);
 
         builder.HasData(laptop, mouse, chair, monitor, lamp);
     }
