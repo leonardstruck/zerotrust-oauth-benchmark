@@ -7,18 +7,19 @@ namespace ZeroTrustOAuth.Inventory.Domain;
 /// </summary>
 public class Product
 {
-    // Internal constructor for EF Core and seed data
-    internal Product() { }
+#pragma warning disable CS8618
+    private Product() { }
+#pragma warning restore CS8618
 
     /// <summary>
     /// Gets the unique identifier for the product.
     /// </summary>
-    public string Id { get; internal set; } = null!;
+    public string Id { get; internal set; }
 
     /// <summary>
     /// Gets the product name.
     /// </summary>
-    public string Name { get; internal set; } = null!;
+    public string Name { get; internal set; }
 
     /// <summary>
     /// Gets the product description.
@@ -28,7 +29,7 @@ public class Product
     /// <summary>
     /// Gets the Stock Keeping Unit identifier.
     /// </summary>
-    public string Sku { get; internal set; } = null!;
+    public string Sku { get; internal set; }
 
     /// <summary>
     /// Gets the current quantity in stock.
