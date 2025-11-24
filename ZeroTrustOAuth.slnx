@@ -7,9 +7,14 @@
         <File Path="NuGet.config" />
         <File Path="README.md" />
     </Folder>
-    <Folder Name="/src/" />
+    <Folder Name="/src/">
+        <Project Path="src/ZeroTrustOAuth.Data/ZeroTrustOAuth.Data.csproj" />
+    </Folder>
     <Folder Name="/src/Orchestration/">
         <Project Path="src/ZeroTrustOAuth.AppHost/ZeroTrustOAuth.AppHost.csproj" />
         <Project Path="src/ZeroTrustOAuth.ServiceDefaults/ZeroTrustOAuth.ServiceDefaults.csproj" />
+    </Folder>
+    <Folder Name="/src/Services/">
+        <Project Path="src/ZeroTrustOAuth.Inventory/ZeroTrustOAuth.Inventory.csproj" />
     </Folder>
 </Solution>

@@ -1,5 +1,3 @@
-using JetBrains.Annotations;
-
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.DependencyInjection;
@@ -30,119 +28,113 @@ public static class ServiceDefaultsExtensions
     private const string HealthEndpointPath = "/health";
     private const string AlivenessEndpointPath = "/alive";
 
-    /// <summary>
-    /// Adds common service defaults to the specified host application builder.
-    /// </summary>
-    /// <typeparam name="TBuilder">The type of the host application builder.</typeparam>
     /// <param name="builder">The host application builder.</param>
-    /// <returns>The same <typeparamref name="TBuilder"/> instance for chaining.</returns>
-    /// <exception cref="ArgumentNullException">Thrown if <paramref name="builder"/> is <c>null</c>.</exception>
-    public static TBuilder AddServiceDefaults<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
-    {
-        ArgumentNullException.ThrowIfNull(builder);
-        builder.ConfigureOpenTelemetry();
-
-        builder.AddDefaultHealthChecks();
-
-        builder.Services.AddServiceDiscovery();
-
-        builder.Services.ConfigureHttpClientDefaults(http =>
-        {
-            // Turn on resilience by default
-            http.AddStandardResilienceHandler();
-
-            // Turn on service discovery by default
-            http.AddServiceDiscovery();
-        });
-
-        builder.Services.Configure<ServiceDiscoveryOptions>(options =>
-        {
-            options.AllowedSchemes = ["https"];
-        });
-
-        return builder;
-    }
-
-    /// <summary>
-    /// Configures OpenTelemetry logging, metrics, and tracing for the application.
-    /// </summary>
     /// <typeparam name="TBuilder">The type of the host application builder.</typeparam>
-    /// <param name="builder">The host application builder.</param>
-    /// <returns>The same <typeparamref name="TBuilder"/> instance for chaining.</returns>
-    /// <exception cref="ArgumentNullException">Thrown if <paramref name="builder"/> is <c>null</c>.</exception>
-    public static TBuilder ConfigureOpenTelemetry<TBuilder>(this TBuilder builder)
-        where TBuilder : IHostApplicationBuilder
+    extension<TBuilder>(TBuilder builder) where TBuilder : IHostApplicationBuilder
     {
-        ArgumentNullException.ThrowIfNull(builder);
-        builder.Logging.AddOpenTelemetry(logging =>
+        /// <summary>
+        /// Adds common service defaults to the specified host application builder.
+        /// </summary>
+        /// <returns>The same <typeparamref name="TBuilder"/> instance for chaining.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="builder"/> is <c>null</c>.</exception>
+        public TBuilder AddServiceDefaults()
         {
-            logging.IncludeFormattedMessage = true;
-            logging.IncludeScopes = true;
-        });
+            ArgumentNullException.ThrowIfNull(builder);
+            builder.ConfigureOpenTelemetry();
 
-        builder.Services.AddOpenTelemetry()
-            .WithMetrics(metrics =>
+            builder.AddDefaultHealthChecks();
+
+            builder.Services.AddServiceDiscovery();
+
+            builder.Services.ConfigureHttpClientDefaults(http =>
             {
-                metrics.AddAspNetCoreInstrumentation()
-                    .AddHttpClientInstrumentation()
-                    .AddRuntimeInstrumentation();
-            })
-            .WithTracing(tracing =>
-            {
-                tracing.AddSource(builder.Environment.ApplicationName)
-                    .AddAspNetCoreInstrumentation(options =>
-                        // Exclude health check requests from tracing
-                        options.Filter = context =>
-                            !context.Request.Path.StartsWithSegments(HealthEndpointPath,
-                                StringComparison.InvariantCulture)
-                            && !context.Request.Path.StartsWithSegments(AlivenessEndpointPath,
-                                StringComparison.InvariantCulture)
-                    )
-                    .AddHttpClientInstrumentation();
+                // Turn on resilience by default
+                http.AddStandardResilienceHandler();
+
+                // Turn on service discovery by default
+                http.AddServiceDiscovery();
             });
 
-        builder.AddOpenTelemetryExporters();
+            builder.Services.Configure<ServiceDiscoveryOptions>(options =>
+            {
+                options.AllowedSchemes = ["https"];
+            });
 
-        return builder;
-    }
-
-    /// <summary>
-    /// Adds and configures OpenTelemetry exporters based on application configuration.
-    /// </summary>
-    /// <typeparam name="TBuilder">The type of the host application builder.</typeparam>
-    /// <param name="builder">The host application builder.</param>
-    /// <returns>The same <typeparamref name="TBuilder"/> instance for chaining.</returns>
-    /// <exception cref="ArgumentNullException">Thrown if <paramref name="builder"/> is <c>null</c>.</exception>
-    public static TBuilder AddOpenTelemetryExporters<TBuilder>(this TBuilder builder)
-        where TBuilder : IHostApplicationBuilder
-    {
-        ArgumentNullException.ThrowIfNull(builder);
-        bool useOtlpExporter = !string.IsNullOrWhiteSpace(builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]);
-
-        if (useOtlpExporter)
-        {
-            builder.Services.AddOpenTelemetry().UseOtlpExporter();
+            return builder;
         }
 
-        return builder;
-    }
+        /// <summary>
+        /// Configures OpenTelemetry logging, metrics, and tracing for the application.
+        /// </summary>
+        /// <returns>The same <typeparamref name="TBuilder"/> instance for chaining.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="builder"/> is <c>null</c>.</exception>
+        public TBuilder ConfigureOpenTelemetry()
+        {
+            ArgumentNullException.ThrowIfNull(builder);
+            builder.Logging.AddOpenTelemetry(logging =>
+            {
+                logging.IncludeFormattedMessage = true;
+                logging.IncludeScopes = true;
+            });
 
-    /// <summary>
-    /// Adds the default health checks used by the application.
-    /// </summary>
-    /// <typeparam name="TBuilder">The type of the host application builder.</typeparam>
-    /// <param name="builder">The host application builder.</param>
-    /// <returns>The same <typeparamref name="TBuilder"/> instance for chaining.</returns>
-    /// <exception cref="ArgumentNullException">Thrown if <paramref name="builder"/> is <c>null</c>.</exception>
-    public static TBuilder AddDefaultHealthChecks<TBuilder>(this TBuilder builder)
-        where TBuilder : IHostApplicationBuilder
-    {
-        ArgumentNullException.ThrowIfNull(builder);
-        builder.Services.AddHealthChecks()
-            // Add a default liveness check to ensure app is responsive
-            .AddCheck("self", () => HealthCheckResult.Healthy(), ["live"]);
+            builder.Services.AddOpenTelemetry()
+                .WithMetrics(metrics =>
+                {
+                    metrics.AddAspNetCoreInstrumentation()
+                        .AddHttpClientInstrumentation()
+                        .AddRuntimeInstrumentation();
+                })
+                .WithTracing(tracing =>
+                {
+                    tracing.AddSource(builder.Environment.ApplicationName)
+                        .AddAspNetCoreInstrumentation(options =>
+                            // Exclude health check requests from tracing
+                            options.Filter = context =>
+                                !context.Request.Path.StartsWithSegments(HealthEndpointPath,
+                                    StringComparison.InvariantCulture)
+                                && !context.Request.Path.StartsWithSegments(AlivenessEndpointPath,
+                                    StringComparison.InvariantCulture)
+                        )
+                        .AddHttpClientInstrumentation();
+                });
 
-        return builder;
+            builder.AddOpenTelemetryExporters();
+
+            return builder;
+        }
+
+        /// <summary>
+        /// Adds and configures OpenTelemetry exporters based on application configuration.
+        /// </summary>
+        /// <returns>The same <typeparamref name="TBuilder"/> instance for chaining.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="builder"/> is <c>null</c>.</exception>
+        public TBuilder AddOpenTelemetryExporters()
+        {
+            ArgumentNullException.ThrowIfNull(builder);
+            bool useOtlpExporter = !string.IsNullOrWhiteSpace(builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]);
+
+            if (useOtlpExporter)
+            {
+                builder.Services.AddOpenTelemetry().UseOtlpExporter();
+            }
+
+            return builder;
+        }
+
+        /// <summary>
+        /// Adds the default health checks used by the application.
+        /// </summary>
+        /// <returns>The same <typeparamref name="TBuilder"/> instance for chaining.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="builder"/> is <c>null</c>.</exception>
+        public TBuilder AddDefaultHealthChecks()
+        {
+            ArgumentNullException.ThrowIfNull(builder);
+            builder.Services.AddHealthChecks()
+                // Add a default liveness check to ensure app is responsive
+                .AddCheck("self", () => HealthCheckResult.Healthy(), ["live"]);
+
+            return builder;
+        }
     }
 
     /// <summary>

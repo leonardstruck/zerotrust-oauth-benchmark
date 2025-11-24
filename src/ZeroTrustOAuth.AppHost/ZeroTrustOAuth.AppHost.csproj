@@ -7,8 +7,13 @@
   <ItemGroup>
     <PackageReference Include="Aspire.Hosting.AppHost" />
     <PackageReference Include="Aspire.Hosting.Keycloak" />
+    <PackageReference Include="Aspire.Hosting.PostgreSQL" />
     <PackageReference Include="Aspire.Hosting.Yarp" />
+    <PackageReference Include="Scalar.Aspire" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\ZeroTrustOAuth.Inventory\ZeroTrustOAuth.Inventory.csproj" />
+  </ItemGroup>
 
 </Project>

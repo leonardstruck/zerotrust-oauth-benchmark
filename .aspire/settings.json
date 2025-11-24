@@ -1,3 +1,6 @@
 {
-  "appHostPath": "../src/ZeroTrustOAuth.AppHost/ZeroTrustOAuth.AppHost.csproj"
+  "appHostPath": "../src/ZeroTrustOAuth.AppHost/ZeroTrustOAuth.AppHost.csproj",
+  "features": {
+    "execCommandEnabled": "true"
+  }
 }
