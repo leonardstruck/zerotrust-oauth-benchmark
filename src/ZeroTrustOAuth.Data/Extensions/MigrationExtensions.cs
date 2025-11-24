@@ -10,8 +10,6 @@ namespace ZeroTrustOAuth.Data.Extensions;
 
 public static partial class MigrationExtensions
 {
-    private static readonly ActivitySource ActivitySource = new("Migrations");
-
     [LoggerMessage(Level = LogLevel.Information, Message = "Starting database migration for {DbContextName}")]
     private static partial void LogMigrationStarting(ILogger logger, string dbContextName);
 
@@ -25,9 +23,14 @@ public static partial class MigrationExtensions
     public static IHostApplicationBuilder AddMigration<TDbContext>(this IHostApplicationBuilder builder)
         where TDbContext : DbContext
     {
+        string activitySourceName = $"DbMigration.{typeof(TDbContext).Name}";
+
+        builder.Services.AddOpenTelemetry()
+            .WithTracing(tracing => tracing.AddSource(activitySourceName));
+
         builder.Services.AddSingleton<MigrationHealthCheck<TDbContext>>();
         builder.Services.AddHealthChecks()
-            .AddCheck<MigrationHealthCheck<TDbContext>>("migration", tags: ["live"]);
+            .AddCheck<MigrationHealthCheck<TDbContext>>("migration", tags: new List<string> { "live" });
         builder.Services.AddHostedService<MigrationService<TDbContext>>();
         return builder;
     }
@@ -44,51 +47,68 @@ public static partial class MigrationExtensions
             CancellationToken cancellationToken = default)
         {
             if (_migrationException != null)
+            {
                 return Task.FromResult(HealthCheckResult.Unhealthy(
                     $"Database migration failed for {typeof(TDbContext).Name}", _migrationException));
+            }
 
             if (!_migrationCompleted)
+            {
                 return Task.FromResult(HealthCheckResult.Degraded(
                     $"Database migration in progress for {typeof(TDbContext).Name}"));
+            }
 
             return Task.FromResult(HealthCheckResult.Healthy(
                 $"Database migration completed for {typeof(TDbContext).Name}"));
         }
     }
 
-    private sealed class MigrationService<TDbContext>(
-        IServiceProvider serviceProvider,
-        IHostApplicationLifetime hostApplicationLifetime,
-        MigrationHealthCheck<TDbContext> healthCheck)
-        : BackgroundService where TDbContext : DbContext
+    private sealed class MigrationService<TDbContext> : BackgroundService where TDbContext : DbContext
     {
+        private readonly ActivitySource _activitySource;
+        private readonly MigrationHealthCheck<TDbContext> _healthCheck;
+        private readonly IHostApplicationLifetime _hostApplicationLifetime;
+        private readonly IServiceProvider _serviceProvider;
+
+        public MigrationService(IServiceProvider serviceProvider,
+            IHostApplicationLifetime hostApplicationLifetime,
+            MigrationHealthCheck<TDbContext> healthCheck)
+        {
+            _serviceProvider = serviceProvider;
+            _hostApplicationLifetime = hostApplicationLifetime;
+            _healthCheck = healthCheck;
+            // Use a descriptive name based on the DbContext for the ActivitySource
+            string activitySourceName = $"DbMigration.{typeof(TDbContext).Name}";
+            _activitySource = new ActivitySource(activitySourceName);
+        }
+
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            using var activity = ActivitySource.StartActivity(ActivityKind.Client);
+            using Activity? activity = _activitySource.StartActivity();
             activity?.SetTag("db.context", typeof(TDbContext).Name);
 
             try
             {
-                using var scope = serviceProvider.CreateScope();
-                var logger = scope.ServiceProvider.GetRequiredService<ILogger<TDbContext>>();
-                var dbContext = scope.ServiceProvider.GetRequiredService<TDbContext>();
+                using IServiceScope scope = _serviceProvider.CreateScope();
+                ILogger<TDbContext> logger = scope.ServiceProvider.GetRequiredService<ILogger<TDbContext>>();
+                TDbContext dbContext = scope.ServiceProvider.GetRequiredService<TDbContext>();
 
                 LogMigrationStarting(logger, typeof(TDbContext).Name);
                 await dbContext.Database.MigrateAsync(stoppingToken);
                 LogMigrationCompleted(logger, typeof(TDbContext).Name);
 
-                healthCheck.MigrationCompleted = true;
+                _healthCheck.MigrationCompleted = true;
                 activity?.SetStatus(ActivityStatusCode.Ok);
             }
             catch (Exception ex)
             {
-                using var scope = serviceProvider.CreateScope();
-                var logger = scope.ServiceProvider.GetRequiredService<ILogger<TDbContext>>();
+                using IServiceScope scope = _serviceProvider.CreateScope();
+                ILogger<TDbContext> logger = scope.ServiceProvider.GetRequiredService<ILogger<TDbContext>>();
                 LogMigrationFailed(logger, ex, typeof(TDbContext).Name);
 
-                healthCheck.MigrationException = ex;
+                _healthCheck.MigrationException = ex;
                 activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
-                hostApplicationLifetime.StopApplication();
+                _hostApplicationLifetime.StopApplication();
                 throw;
             }
         }
