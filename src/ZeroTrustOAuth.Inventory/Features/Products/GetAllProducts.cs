@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 using ZeroTrustOAuth.Inventory.Data;
 
-namespace ZeroTrustOAuth.Inventory.Features.Products.GetAll;
+namespace ZeroTrustOAuth.Inventory.Features.Products;
 
 [UsedImplicitly]
 public class GetAllProducts : ICarterModule
