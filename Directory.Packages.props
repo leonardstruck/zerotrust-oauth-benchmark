@@ -1,35 +1,40 @@
 <Project>
-  <PropertyGroup>
-    <!-- Enable central package management, https://learn.microsoft.com/en-us/nuget/consume-packages/Central-Package-Management -->
-    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-  </PropertyGroup>
-  <ItemGroup>
-    <!-- Central package versions -->
-    <PackageVersion Include="Aspire.Hosting" Version="13.1.0-preview.1.25570.1" />
-    <PackageVersion Include="Aspire.Hosting.AppHost" Version="13.1.0-preview.1.25572.6" />
-    <PackageVersion Include="Aspire.Hosting.Keycloak" Version="13.1.0-preview.1.25572.6" />
-    <PackageVersion Include="Aspire.Hosting.PostgreSQL" Version="13.1.0-preview.1.25572.6" />
-    <PackageVersion Include="Aspire.Hosting.Yarp" Version="13.1.0-preview.1.25572.6" />
-    <PackageVersion Include="Aspire.Npgsql.EntityFrameworkCore.PostgreSQL" Version="13.1.0-preview.1.25572.6" />
-    <PackageVersion Include="Carter" Version="10.0.0" />
-    <PackageVersion Include="ErrorOr" Version="2.1.0" />
-    <PackageVersion Include="FluentValidation.DependencyInjectionExtensions" Version="11.11.0" />
-    <PackageVersion Include="JetBrains.Annotations" Version="2025.2.2" />
-    <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.0" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="10.0.0" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.0" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.0.0" />
-    <PackageVersion Include="Npgsql" Version="10.0.0" />
-    <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="10.0.0" />
-    <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.14.0" />
-    <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.14.0" />
-    <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.14.0" />
-    <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.14.0" />
-    <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.14.0" />
-    <PackageVersion Include="Scalar.Aspire" Version="0.7.4" />
-    <PackageVersion Include="Scalar.AspNetCore" Version="2.11.0" />
-  </ItemGroup>
+    <PropertyGroup>
+        <!-- Enable central package management, https://learn.microsoft.com/en-us/nuget/consume-packages/Central-Package-Management -->
+        <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    </PropertyGroup>
+    <ItemGroup>
+        <!-- Central package versions -->
+        <PackageVersion Include="Aspire.Hosting" Version="13.1.0-preview.1.25570.1"/>
+        <PackageVersion Include="Aspire.Hosting.AppHost" Version="13.1.0-preview.1.25572.6"/>
+        <PackageVersion Include="Aspire.Hosting.Keycloak" Version="13.1.0-preview.1.25572.6"/>
+        <PackageVersion Include="Aspire.Hosting.PostgreSQL" Version="13.1.0-preview.1.25572.6"/>
+        <PackageVersion Include="Aspire.Hosting.Yarp" Version="13.1.0-preview.1.25572.6"/>
+        <PackageVersion Include="Aspire.Keycloak.Authentication" Version="13.1.0-preview.1.25572.6"/>
+        <PackageVersion Include="Aspire.Npgsql.EntityFrameworkCore.PostgreSQL" Version="13.1.0-preview.1.25572.6"/>
+        <PackageVersion Include="Carter" Version="10.0.0"/>
+        <PackageVersion Include="ErrorOr" Version="2.1.0"/>
+        <PackageVersion Include="Facet" Version="4.4.3"/>
+        <PackageVersion Include="Facet.Extensions" Version="4.4.3"/>
+        <PackageVersion Include="Facet.Extensions.EFCore" Version="4.4.3"/>
+        <PackageVersion Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.0"/>
+        <PackageVersion Include="JetBrains.Annotations" Version="2025.2.2"/>
+        <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.0"/>
+        <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="10.0.0"/>
+        <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.0"/>
+        <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.0"/>
+        <PackageVersion Include="Microsoft.Extensions.ApiDescription.Server" Version="10.0.0"/>
+        <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.0"/>
+        <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.0.0"/>
+        <PackageVersion Include="Npgsql" Version="10.0.0"/>
+        <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0"/>
+        <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="10.0.0"/>
+        <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.14.0"/>
+        <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.14.0"/>
+        <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.14.0"/>
+        <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.14.0"/>
+        <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.14.0"/>
+        <PackageVersion Include="Scalar.Aspire" Version="0.7.4"/>
+        <PackageVersion Include="Scalar.AspNetCore" Version="2.11.0"/>
+    </ItemGroup>
 </Project>
