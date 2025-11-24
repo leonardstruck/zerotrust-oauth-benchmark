@@ -1,14 +1,17 @@
 #pragma warning disable ASPIRECONTAINERSHELLEXECUTION001
+
+using Projects;
+
 using Scalar.Aspire;
 
 using ZeroTrustOAuth.AppHost.Hosting.Grafana;
 using ZeroTrustOAuth.AppHost.Hosting.OpenTofu;
 
-
 IDistributedApplicationBuilder builder = DistributedApplication.CreateBuilder(args);
 
-var grafana = builder
-    .AddGrafanaStack("grafana")
+IResourceBuilder<GrafanaStackResource> grafana = builder
+    .AddGrafanaStack("grafana", 58731)
+    .WithEnvironment("ENABLE_LOGS_OTELCOL", "true")
     .WithLifetime(ContainerLifetime.Persistent);
 
 IResourceBuilder<KeycloakResource> identity = builder
@@ -21,16 +24,15 @@ builder.AddOpenTofuProvisioner("identity-provisioner", "./Provisioning/identity"
     .WithVariable("keycloak_url", identity.GetEndpoint("http"))
     .WithVariable("keycloak_password", identity.Resource.AdminPasswordParameter);
 
-var postgres = builder
+IResourceBuilder<PostgresServerResource> postgres = builder
     .AddPostgres("postgres")
     .WithLifetime(ContainerLifetime.Persistent);
 
-var inventoryDb = postgres.AddDatabase("inventorydb");
+IResourceBuilder<PostgresDatabaseResource> inventoryDb = postgres.AddDatabase("inventorydb");
 
-var inventory = builder.AddProject<Projects.ZeroTrustOAuth_Inventory>("inventory")
+IResourceBuilder<ProjectResource> inventory = builder.AddProject<ZeroTrustOAuth_Inventory>("inventory")
     .WithHttpHealthCheck("health")
-    .WithReference(inventoryDb)
-    .WithOtlpRouting(grafana);
+    .WithReference(inventoryDb);
 
 builder
     .AddYarp("gateway")
@@ -39,7 +41,6 @@ builder
         yarp.AddRoute("identity/{**catch-all}", identity);
         yarp.AddRoute("inventory/{**catch-all}", inventory);
     })
-    .WithOtlpRouting(grafana)
     .WithLifetime(ContainerLifetime.Persistent);
 
 builder.AddScalarApiReference()
