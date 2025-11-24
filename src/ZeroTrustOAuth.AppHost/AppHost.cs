@@ -28,6 +28,7 @@ var postgres = builder
 var inventoryDb = postgres.AddDatabase("inventorydb");
 
 var inventory = builder.AddProject<Projects.ZeroTrustOAuth_Inventory>("inventory")
+    .WithHttpHealthCheck("health")
     .WithReference(inventoryDb)
     .WithOtlpRouting(grafana);
 
