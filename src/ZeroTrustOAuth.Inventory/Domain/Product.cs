@@ -1,3 +1,5 @@
+using ErrorOr;
+
 namespace ZeroTrustOAuth.Inventory.Domain;
 
 /// <summary>
@@ -5,53 +7,158 @@ namespace ZeroTrustOAuth.Inventory.Domain;
 /// </summary>
 public class Product
 {
-    /// <summary>
-    /// Gets or sets the unique identifier for the product.
-    /// </summary>
-    public required string Id { get; set; }
+    // Internal constructor for EF Core and seed data
+    internal Product() { }
 
     /// <summary>
-    /// Gets or sets the product name.
+    /// Gets the unique identifier for the product.
     /// </summary>
-    public required string Name { get; set; }
+    public string Id { get; internal set; } = null!;
 
     /// <summary>
-    /// Gets or sets the product description.
+    /// Gets the product name.
     /// </summary>
-    public string? Description { get; set; }
+    public string Name { get; internal set; } = null!;
 
     /// <summary>
-    /// Gets or sets the Stock Keeping Unit identifier.
+    /// Gets the product description.
     /// </summary>
-    public required string Sku { get; set; }
+    public string? Description { get; internal set; }
 
     /// <summary>
-    /// Gets or sets the current quantity in stock.
+    /// Gets the Stock Keeping Unit identifier.
     /// </summary>
-    public int QuantityInStock { get; set; }
+    public string Sku { get; internal set; } = null!;
 
     /// <summary>
-    /// Gets or sets the minimum stock level before reordering.
+    /// Gets the current quantity in stock.
     /// </summary>
-    public int ReorderLevel { get; set; }
+    public int QuantityInStock { get; internal set; }
 
     /// <summary>
-    /// Gets or sets the category of the product.
+    /// Gets the minimum stock level before reordering.
     /// </summary>
-    public string? Category { get; set; }
+    public int ReorderLevel { get; internal set; }
 
     /// <summary>
-    /// Gets or sets the supplier identifier.
+    /// Gets the category of the product.
     /// </summary>
-    public string? SupplierId { get; set; }
+    public string? Category { get; internal set; }
 
     /// <summary>
-    /// Gets or sets the date when the product was added to inventory.
+    /// Gets the supplier identifier.
     /// </summary>
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public string? SupplierId { get; internal set; }
 
     /// <summary>
-    /// Gets or sets the date when the product was last updated.
+    /// Gets the date when the product was added to inventory.
     /// </summary>
-    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; internal set; }
+
+    /// <summary>
+    /// Gets the date when the product was last updated.
+    /// </summary>
+    public DateTime UpdatedAt { get; internal set; }
+
+    public static class Errors
+    {
+        public static Error InsufficientStock(int requested, int available) => Error.Validation(
+            "Product.InsufficientStock",
+            $"Cannot reduce stock by {requested}. Only {available} units available.");
+
+        public static Error NegativeStock => Error.Validation(
+            "Product.NegativeStock",
+            "Stock quantity cannot be negative.");
+
+        public static Error NegativeReorderLevel => Error.Validation(
+            "Product.NegativeReorderLevel",
+            "Reorder level cannot be negative.");
+    }
+
+    /// <summary>
+    /// Creates a new product with the specified details.
+    /// </summary>
+    public static ErrorOr<Product> Create(
+        string name,
+        string sku,
+        int quantityInStock,
+        int reorderLevel,
+        string? description = null,
+        string? category = null,
+        string? supplierId = null)
+    {
+        if (quantityInStock < 0)
+            return Errors.NegativeStock;
+
+        if (reorderLevel < 0)
+            return Errors.NegativeReorderLevel;
+
+        var now = DateTime.UtcNow;
+        return new Product
+        {
+            Id = Guid.NewGuid().ToString(),
+            Name = name,
+            Description = description,
+            Sku = sku,
+            QuantityInStock = quantityInStock,
+            ReorderLevel = reorderLevel,
+            Category = category,
+            SupplierId = supplierId,
+            CreatedAt = now,
+            UpdatedAt = now
+        };
+    }
+
+    /// <summary>
+    /// Updates the product details.
+    /// </summary>
+    public ErrorOr<Success> Update(
+        string? name = null,
+        string? sku = null,
+        int? reorderLevel = null,
+        string? description = null,
+        string? category = null,
+        string? supplierId = null)
+    {
+        if (reorderLevel is < 0)
+            return Errors.NegativeReorderLevel;
+
+        if (name is not null) Name = name;
+        if (sku is not null) Sku = sku;
+        if (reorderLevel.HasValue) ReorderLevel = reorderLevel.Value;
+        if (description is not null) Description = description;
+        if (category is not null) Category = category;
+        if (supplierId is not null) SupplierId = supplierId;
+
+        UpdatedAt = DateTime.UtcNow;
+        return Result.Success;
+    }
+
+    /// <summary>
+    /// Adjusts the stock quantity by the specified amount.
+    /// </summary>
+    public ErrorOr<Success> AdjustStock(int adjustment)
+    {
+        var newQuantity = QuantityInStock + adjustment;
+
+        if (newQuantity < 0)
+            return Errors.InsufficientStock(-adjustment, QuantityInStock);
+
+        QuantityInStock = newQuantity;
+        UpdatedAt = DateTime.UtcNow;
+        return Result.Success;
+    }
+
+    /// <summary>
+    /// Sets the stock quantity to a specific value.
+    /// </summary>
+    public ErrorOr<Success> SetStock(int quantity)
+    {
+        if (quantity < 0)
+            return Errors.NegativeStock;
+
+        QuantityInStock = quantity;
+        UpdatedAt = DateTime.UtcNow;
+        return Result.Success;
+    }
 }
