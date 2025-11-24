@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 
-using ZeroTrustOAuth.Inventory.Data.Configurations;
 using ZeroTrustOAuth.Inventory.Domain;
 
 namespace ZeroTrustOAuth.Inventory.Data;

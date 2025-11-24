@@ -149,17 +149,4 @@ public class Product
         UpdatedAt = DateTime.UtcNow;
         return Result.Success;
     }
-
-    /// <summary>
-    /// Sets the stock quantity to a specific value.
-    /// </summary>
-    public ErrorOr<Success> SetStock(int quantity)
-    {
-        if (quantity < 0)
-            return Errors.NegativeStock;
-
-        QuantityInStock = quantity;
-        UpdatedAt = DateTime.UtcNow;
-        return Result.Success;
-    }
 }
