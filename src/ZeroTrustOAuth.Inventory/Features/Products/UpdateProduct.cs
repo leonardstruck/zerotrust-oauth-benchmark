@@ -4,6 +4,9 @@ using ErrorOr;
 
 using FluentValidation;
 
+using Microsoft.EntityFrameworkCore;
+
+using ZeroTrustOAuth.Data.Extensions;
 using ZeroTrustOAuth.Inventory.Data;
 using ZeroTrustOAuth.Inventory.Domain;
 using ZeroTrustOAuth.ServiceDefaults;
@@ -15,7 +18,7 @@ public class UpdateProduct : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPut<Command>("/products/{id}", Handle)
+        app.MapPatch<Command>("/products/{id}", Handle)
             .WithName("UpdateProduct")
             .WithSummary("Update an existing product")
             .WithTags("Products");
@@ -46,7 +49,17 @@ public class UpdateProduct : ICarterModule
             return updateResult.ToProblem();
         }
 
-        await db.SaveChangesAsync(ct);
+        try
+        {
+            await db.SaveChangesAsync(ct);
+        }
+        catch (DbUpdateException ex) when (ex.IsUniqueConstraintViolation("Sku"))
+        {
+            return Results.ValidationProblem(new Dictionary<string, string[]>
+            {
+                ["Sku"] = [$"A product with SKU '{command.Sku}' already exists."]
+            });
+        }
 
         var response = new Response(
             product.Id,

@@ -6,6 +6,7 @@ using FluentValidation;
 
 using Microsoft.EntityFrameworkCore;
 
+using ZeroTrustOAuth.Data.Extensions;
 using ZeroTrustOAuth.Inventory.Data;
 using ZeroTrustOAuth.Inventory.Domain;
 using ZeroTrustOAuth.ServiceDefaults;
@@ -27,17 +28,6 @@ public class CreateProduct : ICarterModule
         InventoryDbContext db,
         CancellationToken ct)
     {
-        bool skuExists = await db.Products
-            .AnyAsync(p => p.Sku == command.Sku, ct);
-
-        if (skuExists)
-        {
-            return Results.ValidationProblem(new Dictionary<string, string[]>
-            {
-                ["Sku"] = [$"A product with SKU '{command.Sku}' already exists."]
-            });
-        }
-
         ErrorOr<Product> productResult = Product.Create(
             command.Name,
             command.Sku,
@@ -54,7 +44,18 @@ public class CreateProduct : ICarterModule
 
         var product = productResult.Value;
         db.Products.Add(product);
-        await db.SaveChangesAsync(ct);
+
+        try
+        {
+            await db.SaveChangesAsync(ct);
+        }
+        catch (DbUpdateException ex) when (ex.IsUniqueConstraintViolation("Sku"))
+        {
+            return Results.ValidationProblem(new Dictionary<string, string[]>
+            {
+                ["Sku"] = [$"A product with SKU '{command.Sku}' already exists."]
+            });
+        }
 
         var response = new Response(
             product.Id,
