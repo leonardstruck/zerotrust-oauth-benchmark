@@ -1,18 +1,21 @@
 #pragma warning disable ASPIRECONTAINERSHELLEXECUTION001
+
+using Projects;
+
 using Scalar.Aspire;
 
 using ZeroTrustOAuth.AppHost.Hosting.Grafana;
 using ZeroTrustOAuth.AppHost.Hosting.OpenTofu;
-
+using ZeroTrustOAuth.ServiceDefaults;
 
 IDistributedApplicationBuilder builder = DistributedApplication.CreateBuilder(args);
 
-var grafana = builder
-    .AddGrafanaStack("grafana")
+IResourceBuilder<GrafanaStackResource> grafana = builder
+    .AddGrafanaStack(ServiceNames.Grafana)
     .WithLifetime(ContainerLifetime.Persistent);
 
 IResourceBuilder<KeycloakResource> identity = builder
-    .AddKeycloak("identity")
+    .AddKeycloak(ServiceNames.Identity)
     .WithLifetime(ContainerLifetime.Persistent);
 
 builder.AddOpenTofuProvisioner("identity-provisioner", "./Provisioning/identity")
@@ -21,19 +24,20 @@ builder.AddOpenTofuProvisioner("identity-provisioner", "./Provisioning/identity"
     .WithVariable("keycloak_url", identity.GetEndpoint("http"))
     .WithVariable("keycloak_password", identity.Resource.AdminPasswordParameter);
 
-var postgres = builder
-    .AddPostgres("postgres")
+IResourceBuilder<PostgresServerResource> postgres = builder
+    .AddPostgres(ServiceNames.Postgres)
     .WithLifetime(ContainerLifetime.Persistent);
 
-var inventoryDb = postgres.AddDatabase("inventorydb");
+IResourceBuilder<PostgresDatabaseResource> inventoryDb = postgres.AddDatabase(ServiceNames.InventoryDb);
 
-var inventory = builder.AddProject<Projects.ZeroTrustOAuth_Inventory>("inventory")
+IResourceBuilder<ProjectResource> inventory = builder.AddProject<ZeroTrustOAuth_Inventory>(ServiceNames.Inventory)
     .WithHttpHealthCheck("health")
     .WithReference(inventoryDb)
+    .WithReference(identity)
     .WithOtlpRouting(grafana);
 
 builder
-    .AddYarp("gateway")
+    .AddYarp(ServiceNames.Gateway)
     .WithConfiguration(yarp =>
     {
         yarp.AddRoute("identity/{**catch-all}", identity);
@@ -43,6 +47,12 @@ builder
     .WithLifetime(ContainerLifetime.Persistent);
 
 builder.AddScalarApiReference()
-    .WithApiReference(inventory);
+    .WithApiReference(inventory, options =>
+    {
+        options
+            .AddDocument("v1")
+            .AddDocument("internal");
+    });
+
 
 await builder.Build().RunAsync();
