@@ -10,6 +10,8 @@
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
         <CodeAnalysisTreatWarningsAsErrors>true</CodeAnalysisTreatWarningsAsErrors>
         <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+
+        <OpenApiDocumentsDirectory>.</OpenApiDocumentsDirectory>
     </PropertyGroup>
 
     <ItemGroup>
