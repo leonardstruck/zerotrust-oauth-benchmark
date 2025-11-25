@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 using ZeroTrustOAuth.Data.Extensions;
 using ZeroTrustOAuth.Inventory.Features.Categories;
+using ZeroTrustOAuth.Inventory.Features.Products;
 using ZeroTrustOAuth.Inventory.Infrastructure;
 using ZeroTrustOAuth.ServiceDefaults;
 
@@ -56,6 +57,16 @@ app.MapOpenApi();
 app.MapDefaultEndpoints();
 
 app.MapEndpoint<GetCategoriesEndpoint>();
+app.MapEndpoint<GetCategoryByIdEndpoint>();
+app.MapEndpoint<CreateCategoryEndpoint>();
+app.MapEndpoint<UpdateCategoryEndpoint>();
+app.MapEndpoint<ActivateCategoryEndpoint>();
+app.MapEndpoint<DeactivateCategoryEndpoint>();
+
+app.MapEndpoint<GetProductsEndpoint>();
+app.MapEndpoint<GetProductByIdEndpoint>();
+app.MapEndpoint<CreateProductEndpoint>();
+app.MapEndpoint<UpdateProductEndpoint>();
 
 
 await app.RunAsync();

@@ -54,4 +54,60 @@ public class Product
             Stock = stock
         });
     }
+
+    public Result Update(string? sku = null, string? name = null, decimal? price = null, int? stock = null,
+        string? description = null, Guid? categoryId = null)
+    {
+        if (sku is not null)
+        {
+            if (string.IsNullOrWhiteSpace(sku))
+            {
+                return Result.Invalid([new ValidationError(nameof(sku), "SKU cannot be empty.")]);
+            }
+
+            Sku = sku;
+        }
+
+        if (name is not null)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                return Result.Invalid([new ValidationError(nameof(name), "Name cannot be empty.")]);
+            }
+
+            Name = name;
+        }
+
+        if (price is not null)
+        {
+            if (price <= 0)
+            {
+                return Result.Invalid([new ValidationError(nameof(price), "Price must be greater than zero.")]);
+            }
+
+            Price = price.Value;
+        }
+
+        if (stock is not null)
+        {
+            if (stock < 0)
+            {
+                return Result.Invalid([new ValidationError(nameof(stock), "Stock must be greater than or equal to zero.")]);
+            }
+
+            Stock = stock.Value;
+        }
+
+        if (description is not null)
+        {
+            Description = description;
+        }
+
+        if (categoryId is not null)
+        {
+            CategoryId = categoryId;
+        }
+
+        return Result.Success();
+    }
 }
