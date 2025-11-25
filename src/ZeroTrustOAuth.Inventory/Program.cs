@@ -10,22 +10,16 @@ using ZeroTrustOAuth.Inventory.Domain.Products;
 using ZeroTrustOAuth.ServiceDefaults;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
-
 builder.AddServiceDefaults();
 
-builder.Services.SwaggerDocument(o =>
+builder.AddNpgsqlDbContext<InventoryDbContext>(ServiceNames.InventoryDb, configureDbContextOptions: options =>
 {
-    o.EndpointFilter = ep => ep.EndpointTags?.Contains("Internal") is null or false;
-});
-
-builder.Services.SwaggerDocument(o =>
-{
-    o.EndpointFilter = ep => ep.EndpointTags?.Contains("Internal") is true;
-    o.AutoTagPathSegmentIndex = 2;
-    o.DocumentSettings = s =>
+    options.UseAsyncSeeding(async (context, _, cancellationToken) =>
     {
-        s.DocumentName = "internal";
-    };
+        await context.Set<Product>().SeedProductsAsync();
+
+        await context.SaveChangesAsync(cancellationToken);
+    });
 });
 
 builder.Services
@@ -42,31 +36,36 @@ builder.Services
 
 builder.Services.AddAuthorization();
 
-builder.AddNpgsqlDbContext<InventoryDbContext>(ServiceNames.InventoryDb, configureDbContextOptions: options =>
-{
-    options.UseAsyncSeeding(async (context, _, cancellationToken) =>
+
+builder.Services.AddFastEndpoints()
+    .SwaggerDocument(o =>
     {
-        await context.Set<Product>().SeedProductsAsync();
-
-        await context.SaveChangesAsync(cancellationToken);
+        o.ShortSchemaNames = true;
+        o.EndpointFilter = ep => ep.EndpointTags?.Contains("Internal") is null or false;
+    })
+    .SwaggerDocument(o =>
+    {
+        o.ShortSchemaNames = true;
+        o.EndpointFilter = ep => ep.EndpointTags?.Contains("Internal") is true;
+        o.AutoTagPathSegmentIndex = 2;
+        o.DocumentSettings = s =>
+        {
+            s.DocumentName = "internal";
+        };
     });
-});
 
-builder.Services.AddFastEndpoints();
 
 WebApplication app = builder.Build();
 await app.EnsureCreated<InventoryDbContext>();
 
-app.UseHttpsRedirection();
-app.UseAuthentication();
-app.UseAuthorization();
-
-app.UseFastEndpoints();
-
-app.UseSwaggerGen(options =>
-{
-    options.Path = "/openapi/{documentName}.json";
-});
+app
+    .UseHttpsRedirection()
+    .UseAuthentication().UseAuthorization()
+    .UseFastEndpoints()
+    .UseSwaggerGen(options =>
+    {
+        options.Path = "/openapi/{documentName}.json";
+    });
 
 app.MapDefaultEndpoints();
 
