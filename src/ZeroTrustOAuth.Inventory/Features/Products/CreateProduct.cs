@@ -7,6 +7,7 @@ using FluentValidation.Results;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
+using ZeroTrustOAuth.Auth;
 using ZeroTrustOAuth.Inventory.Domain.Products;
 using ZeroTrustOAuth.Inventory.Infrastructure;
 using ZeroTrustOAuth.ServiceDefaults;
@@ -46,9 +47,10 @@ public class CreateProductEndpoint : IEndpoint
             .WithSummary("Create a new product")
             .WithDescription(
                 "Creates a new product in the inventory system with SKU, name, price, stock quantity, optional description, and optional category assignment.")
-            .WithTags("Products")
-            .Produces<ProductDetailsDto>(StatusCodes.Status201Created, "application/json")
-            .ProducesProblem(StatusCodes.Status400BadRequest);
+                .WithTags("Products")
+                .Produces<ProductDetailsDto>(StatusCodes.Status201Created, "application/json")
+                .ProducesProblem(StatusCodes.Status400BadRequest)
+                .RequireAuthorization(ScopePolicies.InventoryProductManage);
     }
 
     private static async Task<IResult> Handler(

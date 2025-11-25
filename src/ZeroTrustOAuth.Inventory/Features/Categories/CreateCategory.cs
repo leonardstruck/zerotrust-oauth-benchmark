@@ -10,6 +10,7 @@ using FluentValidation.Results;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
+using ZeroTrustOAuth.Auth;
 using ZeroTrustOAuth.Inventory.Domain.Categories;
 using ZeroTrustOAuth.Inventory.Infrastructure;
 using ZeroTrustOAuth.ServiceDefaults;
@@ -37,9 +38,10 @@ public class CreateCategoryEndpoint : IEndpoint
             .WithSummary("Create a new category")
             .WithDescription(
                 "Creates a new category in the inventory system with the provided name, description, and active status.")
-            .WithTags("Categories")
-            .Produces<CategoryDetailsDto>(StatusCodes.Status201Created, "application/json")
-            .ProducesProblem(StatusCodes.Status400BadRequest);
+                .WithTags("Categories")
+                .Produces<CategoryDetailsDto>(StatusCodes.Status201Created, "application/json")
+                .ProducesProblem(StatusCodes.Status400BadRequest)
+                .RequireAuthorization(ScopePolicies.InventoryProductManage);
     }
 
     private static async Task<IResult> Handler(

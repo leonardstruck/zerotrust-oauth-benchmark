@@ -7,6 +7,7 @@ using FluentValidation.Results;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
+using ZeroTrustOAuth.Auth;
 using ZeroTrustOAuth.Inventory.Domain.Products;
 using ZeroTrustOAuth.Inventory.Infrastructure;
 using ZeroTrustOAuth.ServiceDefaults;
@@ -52,10 +53,11 @@ public class UpdateProductEndpoint : IEndpoint
             .WithSummary("Update a product")
             .WithDescription(
                 "Updates an existing product's properties including SKU, name, price, stock, description, and category. At least one property must be provided.")
-            .WithTags("Products")
-            .Produces<ProductDetailsDto>(StatusCodes.Status200OK, "application/json")
-            .ProducesProblem(StatusCodes.Status400BadRequest)
-            .Produces(StatusCodes.Status404NotFound);
+                .WithTags("Products")
+                .Produces<ProductDetailsDto>(StatusCodes.Status200OK, "application/json")
+                .ProducesProblem(StatusCodes.Status400BadRequest)
+                .Produces(StatusCodes.Status404NotFound)
+                .RequireAuthorization(ScopePolicies.InventoryProductManage);
     }
 
     private static async Task<IResult> Handler(

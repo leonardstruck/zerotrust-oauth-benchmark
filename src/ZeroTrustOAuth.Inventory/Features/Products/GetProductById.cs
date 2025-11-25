@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
+using ZeroTrustOAuth.Auth;
 using ZeroTrustOAuth.Inventory.Infrastructure;
 using ZeroTrustOAuth.ServiceDefaults;
 
@@ -17,8 +18,9 @@ public class GetProductByIdEndpoint : IEndpoint
             .WithDescription(
                 "Retrieves detailed information about a specific product by its unique identifier, including full description and category details.")
             .WithTags("Products")
-            .Produces<ProductDetailsDto>(StatusCodes.Status200OK, "application/json")
-            .Produces(StatusCodes.Status404NotFound);
+                .Produces<ProductDetailsDto>(StatusCodes.Status200OK, "application/json")
+                .Produces(StatusCodes.Status404NotFound)
+                .RequireAuthorization(ScopePolicies.InventoryProductRead);
     }
 
     private static async Task<Results<Ok<ProductDetailsDto>, NotFound>> Handler(

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
+using ZeroTrustOAuth.Auth;
 using ZeroTrustOAuth.Inventory.Infrastructure;
 using ZeroTrustOAuth.ServiceDefaults;
 
@@ -17,9 +18,10 @@ public class GetCategoryByIdEndpoint : IEndpoint
             .WithName("GetCategoryById")
             .WithSummary("Get a category by ID")
             .WithDescription("Retrieves detailed information about a specific category by its unique identifier.")
-            .WithTags("Categories")
-            .Produces<CategoryDetailsDto>(StatusCodes.Status200OK, "application/json")
-            .Produces(StatusCodes.Status404NotFound);
+                .WithTags("Categories")
+                .Produces<CategoryDetailsDto>(StatusCodes.Status200OK, "application/json")
+                .Produces(StatusCodes.Status404NotFound)
+                .RequireAuthorization(ScopePolicies.InventoryProductRead);
     }
 
     private static async Task<Results<Ok<CategoryDetailsDto>, NotFound>> Handler(

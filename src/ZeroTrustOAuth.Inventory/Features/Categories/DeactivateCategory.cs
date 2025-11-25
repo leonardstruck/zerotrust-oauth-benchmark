@@ -3,6 +3,7 @@ using Ardalis.Result.AspNetCore;
 
 using Microsoft.AspNetCore.Mvc;
 
+using ZeroTrustOAuth.Auth;
 using ZeroTrustOAuth.Inventory.Domain.Categories;
 using ZeroTrustOAuth.Inventory.Infrastructure;
 using ZeroTrustOAuth.ServiceDefaults;
@@ -20,10 +21,11 @@ public class DeactivateCategoryEndpoint : IEndpoint
             .WithSummary("Deactivate a category")
             .WithDescription(
                 "Deactivates a category, making it unavailable for use in the inventory system while preserving its data.")
-            .WithTags("Categories")
-            .Produces(StatusCodes.Status204NoContent)
-            .ProducesProblem(StatusCodes.Status400BadRequest)
-            .Produces(StatusCodes.Status404NotFound);
+                .WithTags("Categories")
+                .Produces(StatusCodes.Status204NoContent)
+                .ProducesProblem(StatusCodes.Status400BadRequest)
+                .Produces(StatusCodes.Status404NotFound)
+                .RequireAuthorization(ScopePolicies.InventoryProductManage);
     }
 
     private static async Task<IResult> Handler(

@@ -9,6 +9,7 @@ using FluentValidation.Results;
 
 using Microsoft.AspNetCore.Mvc;
 
+using ZeroTrustOAuth.Auth;
 using ZeroTrustOAuth.Inventory.Domain.Categories;
 using ZeroTrustOAuth.Inventory.Infrastructure;
 using ZeroTrustOAuth.ServiceDefaults;
@@ -40,10 +41,11 @@ public class UpdateCategoryEndpoint : IEndpoint
             .WithSummary("Update a category")
             .WithDescription(
                 "Updates an existing category's name and/or description. At least one property must be provided.")
-            .WithTags("Categories")
-            .Produces<CategoryDetailsDto>(StatusCodes.Status200OK, "application/json")
-            .ProducesProblem(StatusCodes.Status400BadRequest)
-            .Produces(StatusCodes.Status404NotFound);
+                .WithTags("Categories")
+                .Produces<CategoryDetailsDto>(StatusCodes.Status200OK, "application/json")
+                .ProducesProblem(StatusCodes.Status400BadRequest)
+                .Produces(StatusCodes.Status404NotFound)
+                .RequireAuthorization(ScopePolicies.InventoryProductManage);
     }
 
     private static async Task<IResult> Handler(

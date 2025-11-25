@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
+using ZeroTrustOAuth.Auth;
 using ZeroTrustOAuth.Inventory.Infrastructure;
 using ZeroTrustOAuth.ServiceDefaults;
 
@@ -19,7 +20,8 @@ public class GetProductsEndpoint : IEndpoint
             .WithDescription(
                 "Retrieves a list of all products in the inventory system, including their SKU, name, price, stock, and associated category.")
             .WithTags("Products")
-            .Produces<GetProductsResponse>(StatusCodes.Status200OK, "application/json");
+            .Produces<GetProductsResponse>(StatusCodes.Status200OK, "application/json")
+            .RequireAuthorization(ScopePolicies.InventoryCatalogSearch);
     }
 
     private static async Task<Ok<GetProductsResponse>> Handler(
