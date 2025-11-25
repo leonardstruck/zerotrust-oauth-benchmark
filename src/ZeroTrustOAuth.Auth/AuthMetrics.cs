@@ -1,6 +1,6 @@
 using System.Diagnostics.Metrics;
 
-namespace ZeroTrustOAuth.ServiceDefaults;
+namespace ZeroTrustOAuth.Auth;
 
 internal static class AuthMetrics
 {
