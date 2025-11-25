@@ -30,7 +30,7 @@ public static partial class MigrationExtensions
 
         builder.Services.AddSingleton<MigrationHealthCheck<TDbContext>>();
         builder.Services.AddHealthChecks()
-            .AddCheck<MigrationHealthCheck<TDbContext>>("migration", tags: new List<string> { "live" });
+            .AddCheck<MigrationHealthCheck<TDbContext>>("migration", tags: ["live"]);
         builder.Services.AddHostedService<MigrationService<TDbContext>>();
         return builder;
     }
