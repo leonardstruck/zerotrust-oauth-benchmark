@@ -16,6 +16,14 @@ public class CreateProduct(InventoryDbContext dbContext) : Endpoint<CreateProduc
     {
         Post("/");
         Group<InternalProductsGroup>();
+        Summary(s =>
+        {
+            s.Summary = "Create a new product";
+            s.Description = "Creates a new product in the inventory system with the specified details";
+            s.Responses[201] = "Product successfully created";
+            s.Responses[400] = "Invalid request or validation error";
+            s.Responses[409] = "Product with the same SKU already exists";
+        });
     }
 
     public override async Task HandleAsync(CreateProductRequest req, CancellationToken ct)

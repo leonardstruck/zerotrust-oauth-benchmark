@@ -13,6 +13,13 @@ public class DeleteProduct(InventoryDbContext dbContext) : Endpoint<DeleteProduc
     {
         Delete("/{id}");
         Group<InternalProductsGroup>();
+        Summary(s =>
+        {
+            s.Summary = "Delete a product";
+            s.Description = "Permanently deletes a product from the inventory system";
+            s.Responses[204] = "Product successfully deleted";
+            s.Responses[404] = "Product not found";
+        });
     }
 
     public override async Task HandleAsync(DeleteProductRequest req, CancellationToken ct)

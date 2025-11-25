@@ -16,6 +16,12 @@ public class GetProductsByCategory(InventoryDbContext dbContext)
         Get("/category/{category}");
         Group<ProductsGroup>();
         AllowAnonymous();
+        Summary(s =>
+        {
+            s.Summary = "Get products by category";
+            s.Description = "Retrieves all products in a specific category with public information";
+            s.Responses[200] = "Successfully retrieved products in the category";
+        });
     }
 
     public override async Task HandleAsync(GetProductsByCategoryRequest req, CancellationToken ct)

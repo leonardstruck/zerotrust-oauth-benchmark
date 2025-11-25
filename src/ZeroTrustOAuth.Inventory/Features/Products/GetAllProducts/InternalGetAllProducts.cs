@@ -15,7 +15,15 @@ public class InternalGetAllProducts(InventoryDbContext dbContext)
     {
         Get("/");
         Group<InternalProductsGroup>();
+        Summary(s =>
+        {
+            s.Summary = "Get all products (internal)";
+            s.Description =
+                "Retrieves a list of all products with full internal details including stock levels and supplier information";
+            s.Responses[200] = "Successfully retrieved all products with internal details";
+        });
     }
+
 
     public override async Task HandleAsync(CancellationToken ct)
     {

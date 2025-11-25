@@ -8,13 +8,20 @@ using ZeroTrustOAuth.Inventory.Data;
 
 namespace ZeroTrustOAuth.Inventory.Features.Products.GetProductById;
 
-public class GetProductById(InventoryDbContext dbContext) : Endpoint<GetProductByIdRequest, GetProductByIdResponse>
+public class GetProductById(InventoryDbContext dbContext) : Endpoint<GetProductByIdRequest, ProductDto>
 {
     public override void Configure()
     {
         Get("/{id}");
         Group<ProductsGroup>();
         AllowAnonymous();
+        Summary(s =>
+        {
+            s.Summary = "Get product by ID";
+            s.Description = "Retrieves a single product by its unique identifier with public information";
+            s.Responses[200] = "Successfully retrieved the product";
+            s.Responses[404] = "Product not found";
+        });
     }
 
     public override async Task HandleAsync(GetProductByIdRequest req, CancellationToken ct)
@@ -30,12 +37,9 @@ public class GetProductById(InventoryDbContext dbContext) : Endpoint<GetProductB
             return;
         }
 
-        await Send.OkAsync(new GetProductByIdResponse(product), ct);
+        await Send.OkAsync(product, ct);
     }
 }
-
-[PublicAPI]
-public record GetProductByIdResponse(ProductDto Product);
 
 [PublicAPI]
 public record GetProductByIdRequest(string Id);

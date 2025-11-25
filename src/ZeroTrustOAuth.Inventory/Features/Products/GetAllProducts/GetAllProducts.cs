@@ -15,6 +15,12 @@ public class GetAllProducts(InventoryDbContext dbContext) : EndpointWithoutReque
         Get("/");
         Group<ProductsGroup>();
         AllowAnonymous();
+        Summary(s =>
+        {
+            s.Summary = "Get all products";
+            s.Description = "Retrieves a list of all products with public information";
+            s.Responses[200] = "Successfully retrieved all products";
+        });
     }
 
     public override async Task HandleAsync(CancellationToken ct)

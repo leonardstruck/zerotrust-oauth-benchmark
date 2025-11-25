@@ -11,12 +11,19 @@ using ZeroTrustOAuth.Inventory.Data;
 namespace ZeroTrustOAuth.Inventory.Features.Products.GetProductById;
 
 public class InternalGetProductById(InventoryDbContext dbContext)
-    : EndpointWithoutRequest<InternalGetProductByIdResponse>
+    : EndpointWithoutRequest<InternalProductDto>
 {
     public override void Configure()
     {
         Get("/{id}");
         Group<InternalProductsGroup>();
+        Summary(s =>
+        {
+            s.Summary = "Get product by ID (internal)";
+            s.Description = "Retrieves a single product by its unique identifier with full internal details";
+            s.Responses[200] = "Successfully retrieved the product with internal details";
+            s.Responses[404] = "Product not found";
+        });
     }
 
     public override async Task HandleAsync(CancellationToken ct)
@@ -40,9 +47,6 @@ public class InternalGetProductById(InventoryDbContext dbContext)
             return;
         }
 
-        await Send.OkAsync(new InternalGetProductByIdResponse(product), ct);
+        await Send.OkAsync(product, ct);
     }
 }
-
-[PublicAPI]
-public record InternalGetProductByIdResponse(InternalProductDto Product);

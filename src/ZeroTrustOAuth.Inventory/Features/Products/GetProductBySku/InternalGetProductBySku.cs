@@ -9,12 +9,19 @@ using ZeroTrustOAuth.Inventory.Data;
 namespace ZeroTrustOAuth.Inventory.Features.Products.GetProductBySku;
 
 public class InternalGetProductBySku(InventoryDbContext dbContext)
-    : Endpoint<InternalGetProductBySkuRequest, InternalGetProductBySkuResponse>
+    : Endpoint<InternalGetProductBySkuRequest, InternalProductDto>
 {
     public override void Configure()
     {
         Get("/sku/{sku}");
         Group<InternalProductsGroup>();
+        Summary(s =>
+        {
+            s.Summary = "Get product by SKU (internal)";
+            s.Description = "Retrieves a single product by its Stock Keeping Unit (SKU) with full internal details";
+            s.Responses[200] = "Successfully retrieved the product with internal details";
+            s.Responses[404] = "Product not found";
+        });
     }
 
     public override async Task HandleAsync(InternalGetProductBySkuRequest req, CancellationToken ct)
@@ -30,12 +37,9 @@ public class InternalGetProductBySku(InventoryDbContext dbContext)
             return;
         }
 
-        await Send.OkAsync(new InternalGetProductBySkuResponse(product), ct);
+        await Send.OkAsync(product, ct);
     }
 }
-
-[PublicAPI]
-public record InternalGetProductBySkuResponse(InternalProductDto Product);
 
 [PublicAPI]
 public record InternalGetProductBySkuRequest(string Sku);

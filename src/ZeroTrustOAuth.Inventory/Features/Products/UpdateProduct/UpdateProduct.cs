@@ -19,6 +19,15 @@ public class UpdateProduct(InventoryDbContext dbContext)
     {
         Patch("/{id}");
         Group<InternalProductsGroup>();
+        Summary(s =>
+        {
+            s.Summary = "Update a product";
+            s.Description = "Updates an existing product's details. Only provided fields will be updated.";
+            s.Responses[200] = "Product successfully updated";
+            s.Responses[400] = "Invalid request or validation error";
+            s.Responses[404] = "Product not found";
+            s.Responses[409] = "Product with the same SKU already exists";
+        });
     }
 
     public override async Task HandleAsync(UpdateProductRequest req, CancellationToken ct)

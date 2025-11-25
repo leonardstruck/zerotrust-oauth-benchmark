@@ -15,6 +15,12 @@ public class InternalGetProductsByCategory(InventoryDbContext dbContext)
     {
         Get("/category/{category}");
         Group<InternalProductsGroup>();
+        Summary(s =>
+        {
+            s.Summary = "Get products by category (internal)";
+            s.Description = "Retrieves all products in a specific category with full internal details";
+            s.Responses[200] = "Successfully retrieved products in the category with internal details";
+        });
     }
 
     public override async Task HandleAsync(InternalGetProductsByCategoryRequest req, CancellationToken ct)
