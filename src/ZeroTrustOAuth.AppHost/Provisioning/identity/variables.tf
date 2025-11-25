@@ -21,8 +21,32 @@ variable "keycloak_password" {
   sensitive   = true
 }
 
-variable "inventory_client_secrets" {
-  description = "Map of Keycloak client IDs to confidential client secrets provided by the Aspire AppHost."
-  type        = map(string)
+variable "gateway_api_client_secret" {
+  description = "Confidential client secret for the gateway-api client."
+  type        = string
+  sensitive   = true
+}
+
+variable "inventory_api_client_secret" {
+  description = "Confidential client secret for the inventory-api client."
+  type        = string
+  sensitive   = true
+}
+
+variable "shipping_api_client_secret" {
+  description = "Confidential client secret for the shipping-api client."
+  type        = string
+  sensitive   = true
+}
+
+variable "backoffice_admin_api_client_secret" {
+  description = "Confidential client secret for the backoffice-admin-api client."
+  type        = string
+  sensitive   = true
+}
+
+variable "load_tester_client_secret" {
+  description = "Confidential client secret for the load-tester client."
+  type        = string
   sensitive   = true
 }

@@ -129,6 +129,14 @@ locals {
       service_account_role_key = "role_inventory_admin"
     }
   }
+
+  inventory_client_secrets = {
+    "gateway-api"          = var.gateway_api_client_secret
+    "inventory-api"        = var.inventory_api_client_secret
+    "shipping-api"         = var.shipping_api_client_secret
+    "backoffice-admin-api" = var.backoffice_admin_api_client_secret
+    "load-tester"          = var.load_tester_client_secret
+  }
 }
 
 resource "keycloak_realm" "zerotrust_oauth" {
@@ -181,7 +189,7 @@ resource "keycloak_openid_client" "inventory_clients" {
   valid_redirect_uris          = lookup(each.value, "valid_redirect_uris", ["*"])
   web_origins                  = ["+"]
   root_url                     = lookup(each.value, "root_url", "")
-  client_secret                = var.inventory_client_secrets[each.key]
+  client_secret                = local.inventory_client_secrets[each.key]
   full_scope_allowed           = false
 }
 
