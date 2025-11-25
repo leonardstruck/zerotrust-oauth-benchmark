@@ -57,7 +57,7 @@ public static partial class MigrationExtensions
 
                 LogMigrationStarting(logger, typeof(T).Name);
                 await executionStrategy.ExecuteAsync(async () =>
-                    await dbContext.Database.EnsureCreatedAsync(stoppingToken));
+                    await dbContext.Database.MigrateAsync(stoppingToken));
                 LogMigrationCompleted(logger, typeof(T).Name);
 
                 activity?.SetStatus(ActivityStatusCode.Ok);
