@@ -1,0 +1,35 @@
+using FastEndpoints;
+
+using Microsoft.EntityFrameworkCore;
+
+using ZeroTrustOAuth.Inventory.Data;
+using ZeroTrustOAuth.Inventory.Domain.Products;
+
+namespace ZeroTrustOAuth.Inventory.Features.Products.DeleteProduct;
+
+public class DeleteProduct(InventoryDbContext dbContext) : Endpoint<DeleteProductRequest>
+{
+    public override void Configure()
+    {
+        Delete("/{id}");
+        Group<InternalProductsGroup>();
+    }
+
+    public override async Task HandleAsync(DeleteProductRequest req, CancellationToken ct)
+    {
+        Product? product = await dbContext.Products.FirstOrDefaultAsync(p => p.Id == req.Id, ct);
+        if (product is null)
+        {
+            await Send.NotFoundAsync(ct);
+            return;
+        }
+
+        dbContext.Products.Remove(product);
+        await dbContext.SaveChangesAsync(ct);
+
+        await Send.NoContentAsync(ct);
+    }
+}
+
+[PublicAPI]
+public record DeleteProductRequest(string Id);
