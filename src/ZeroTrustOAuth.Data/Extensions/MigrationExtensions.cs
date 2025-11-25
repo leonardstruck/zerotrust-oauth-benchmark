@@ -1,19 +1,52 @@
 using System.Diagnostics;
 using System.Reflection;
 
+using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+
+using DbContext = Microsoft.EntityFrameworkCore.DbContext;
 
 namespace ZeroTrustOAuth.Data.Extensions;
 
 public static partial class MigrationExtensions
 {
     private static readonly ActivitySource ActivitySource = new("Migrations");
+    private static readonly Assembly EntryAssembly = Assembly.GetEntryAssembly()!;
 
-    [LoggerMessage(Level = LogLevel.Information, Message = "Starting database migration for {DbContextName}")]
+    public static async Task EnsureCreated<T>(this IApplicationBuilder app) where T : DbContext
+    {
+        using Activity? activity = ActivitySource.StartActivity(ActivityKind.Internal);
+        activity?.SetTag("db.context", typeof(T).Name);
+
+        try
+        {
+            await using AsyncServiceScope scope = app.ApplicationServices.CreateAsyncScope();
+            await using T dbContext = scope.ServiceProvider.GetRequiredService<T>();
+            ILogger<T> logger = scope.ServiceProvider.GetRequiredService<ILogger<T>>();
+
+            IExecutionStrategy executionStrategy = dbContext.Database.CreateExecutionStrategy();
+
+            LogMigrationStarting(logger, typeof(T).Name);
+            await executionStrategy.ExecuteAsync(async () => await dbContext.Database.EnsureCreatedAsync());
+            LogMigrationCompleted(logger, typeof(T).Name);
+        }
+        catch (Exception ex)
+        {
+            await using AsyncServiceScope scope = app.ApplicationServices.CreateAsyncScope();
+            ILogger<T> logger = scope.ServiceProvider.GetRequiredService<ILogger<T>>();
+
+            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            LogMigrationFailed(logger, ex, typeof(T).Name);
+            throw;
+        }
+
+        activity?.SetStatus(ActivityStatusCode.Ok);
+    }
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "Starting database migration for {dbContextName}")]
     private static partial void LogMigrationStarting(ILogger logger, string dbContextName);
 
     [LoggerMessage(Level = LogLevel.Information,
@@ -22,85 +55,4 @@ public static partial class MigrationExtensions
 
     [LoggerMessage(Level = LogLevel.Error, Message = "Database migration failed for {DbContextName}")]
     private static partial void LogMigrationFailed(ILogger logger, Exception ex, string dbContextName);
-
-    public static IHostApplicationBuilder AddMigration<TDbContext>(this IHostApplicationBuilder builder)
-        where TDbContext : DbContext
-    {
-        if (Assembly.GetEntryAssembly()?.GetName().Name == "GetDocument.Insider")
-        {
-            return builder;
-        }
-
-        builder.Services.AddSingleton<MigrationHealthCheck<TDbContext>>();
-        builder.Services.AddHealthChecks()
-            .AddCheck<MigrationHealthCheck<TDbContext>>("migration", tags: ["live"]);
-        builder.Services.AddHostedService<MigrationService<TDbContext>>();
-        return builder;
-    }
-
-    private sealed class MigrationHealthCheck<TDbContext> : IHealthCheck where TDbContext : DbContext
-    {
-        private volatile bool _migrationCompleted;
-        private Exception? _migrationException;
-
-        public bool MigrationCompleted { set => _migrationCompleted = value; }
-        public Exception? MigrationException { set => _migrationException = value; }
-
-        public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context,
-            CancellationToken cancellationToken = default)
-        {
-            if (_migrationException != null)
-            {
-                return Task.FromResult(HealthCheckResult.Unhealthy(
-                    $"Database migration failed for {typeof(TDbContext).Name}", _migrationException));
-            }
-
-            if (!_migrationCompleted)
-            {
-                return Task.FromResult(HealthCheckResult.Degraded(
-                    $"Database migration in progress for {typeof(TDbContext).Name}"));
-            }
-
-            return Task.FromResult(HealthCheckResult.Healthy(
-                $"Database migration completed for {typeof(TDbContext).Name}"));
-        }
-    }
-
-    private sealed class MigrationService<TDbContext>(
-        IServiceProvider serviceProvider,
-        IHostApplicationLifetime hostApplicationLifetime,
-        MigrationHealthCheck<TDbContext> healthCheck)
-        : BackgroundService where TDbContext : DbContext
-    {
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-        {
-            using Activity? activity = ActivitySource.StartActivity(ActivityKind.Client);
-            activity?.SetTag("db.context", typeof(TDbContext).Name);
-
-            try
-            {
-                using IServiceScope scope = serviceProvider.CreateScope();
-                ILogger<TDbContext> logger = scope.ServiceProvider.GetRequiredService<ILogger<TDbContext>>();
-                TDbContext dbContext = scope.ServiceProvider.GetRequiredService<TDbContext>();
-
-                LogMigrationStarting(logger, typeof(TDbContext).Name);
-                await dbContext.Database.MigrateAsync(stoppingToken);
-                LogMigrationCompleted(logger, typeof(TDbContext).Name);
-
-                healthCheck.MigrationCompleted = true;
-                activity?.SetStatus(ActivityStatusCode.Ok);
-            }
-            catch (Exception ex)
-            {
-                using IServiceScope scope = serviceProvider.CreateScope();
-                ILogger<TDbContext> logger = scope.ServiceProvider.GetRequiredService<ILogger<TDbContext>>();
-                LogMigrationFailed(logger, ex, typeof(TDbContext).Name);
-
-                healthCheck.MigrationException = ex;
-                activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
-                hostApplicationLifetime.StopApplication();
-                throw;
-            }
-        }
-    }
 }
