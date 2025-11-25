@@ -1,16 +1,28 @@
 using System.Diagnostics;
 
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+
+using DbContext = Microsoft.EntityFrameworkCore.DbContext;
 
 namespace ZeroTrustOAuth.Data.Extensions;
 
 public static partial class MigrationExtensions
 {
     private static readonly ActivitySource ActivitySource = new("Migrations");
+
+    /// <summary>
+    ///     Adds a hosted service that will run database migrations on application startup.
+    /// </summary>
+    public static IHostApplicationBuilder AddDatabaseMigration<T>(this IHostApplicationBuilder builder)
+        where T : DbContext
+    {
+        builder.Services.AddHostedService<DatabaseMigrationWorker<T>>();
+        return builder;
+    }
 
     [LoggerMessage(Level = LogLevel.Information, Message = "Starting database migration for {DbContextName}")]
     private static partial void LogMigrationStarting(ILogger logger, string dbContextName);
@@ -22,75 +34,54 @@ public static partial class MigrationExtensions
     [LoggerMessage(Level = LogLevel.Error, Message = "Database migration failed for {DbContextName}")]
     private static partial void LogMigrationFailed(ILogger logger, Exception ex, string dbContextName);
 
-    public static IHostApplicationBuilder AddMigration<TDbContext>(this IHostApplicationBuilder builder)
-        where TDbContext : DbContext
-    {
-        builder.Services.AddSingleton<MigrationHealthCheck<TDbContext>>();
-        builder.Services.AddHealthChecks()
-            .AddCheck<MigrationHealthCheck<TDbContext>>("migration", tags: ["live"]);
-        builder.Services.AddHostedService<MigrationService<TDbContext>>();
-        return builder;
-    }
-
-    private sealed class MigrationHealthCheck<TDbContext> : IHealthCheck where TDbContext : DbContext
-    {
-        private volatile bool _migrationCompleted;
-        private Exception? _migrationException;
-
-        public bool MigrationCompleted { set => _migrationCompleted = value; }
-        public Exception? MigrationException { set => _migrationException = value; }
-
-        public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context,
-            CancellationToken cancellationToken = default)
-        {
-            if (_migrationException != null)
-                return Task.FromResult(HealthCheckResult.Unhealthy(
-                    $"Database migration failed for {typeof(TDbContext).Name}", _migrationException));
-
-            if (!_migrationCompleted)
-                return Task.FromResult(HealthCheckResult.Degraded(
-                    $"Database migration in progress for {typeof(TDbContext).Name}"));
-
-            return Task.FromResult(HealthCheckResult.Healthy(
-                $"Database migration completed for {typeof(TDbContext).Name}"));
-        }
-    }
-
-    private sealed class MigrationService<TDbContext>(
+    private sealed class DatabaseMigrationWorker<T>(
         IServiceProvider serviceProvider,
-        IHostApplicationLifetime hostApplicationLifetime,
-        MigrationHealthCheck<TDbContext> healthCheck)
-        : BackgroundService where TDbContext : DbContext
+        IHostApplicationLifetime lifetime,
+        ILogger<DatabaseMigrationWorker<T>> logger)
+        : BackgroundService where T : DbContext
     {
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            using var activity = ActivitySource.StartActivity(ActivityKind.Client);
-            activity?.SetTag("db.context", typeof(TDbContext).Name);
+            using Activity? activity = ActivitySource.StartActivity(ActivityKind.Internal);
+            activity?.SetTag("db.context", typeof(T).Name);
 
             try
             {
-                using var scope = serviceProvider.CreateScope();
-                var logger = scope.ServiceProvider.GetRequiredService<ILogger<TDbContext>>();
-                var dbContext = scope.ServiceProvider.GetRequiredService<TDbContext>();
+                // Wait for the application to be started before running migrations
+                await WaitForApplicationStarted(lifetime, stoppingToken);
 
-                LogMigrationStarting(logger, typeof(TDbContext).Name);
-                await dbContext.Database.MigrateAsync(stoppingToken);
-                LogMigrationCompleted(logger, typeof(TDbContext).Name);
+                await using AsyncServiceScope scope = serviceProvider.CreateAsyncScope();
+                await using T dbContext = scope.ServiceProvider.GetRequiredService<T>();
 
-                healthCheck.MigrationCompleted = true;
+                IExecutionStrategy executionStrategy = dbContext.Database.CreateExecutionStrategy();
+
+                LogMigrationStarting(logger, typeof(T).Name);
+                await executionStrategy.ExecuteAsync(async () =>
+                    await dbContext.Database.EnsureCreatedAsync(stoppingToken));
+                LogMigrationCompleted(logger, typeof(T).Name);
+
                 activity?.SetStatus(ActivityStatusCode.Ok);
             }
             catch (Exception ex)
             {
-                using var scope = serviceProvider.CreateScope();
-                var logger = scope.ServiceProvider.GetRequiredService<ILogger<TDbContext>>();
-                LogMigrationFailed(logger, ex, typeof(TDbContext).Name);
-
-                healthCheck.MigrationException = ex;
                 activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
-                hostApplicationLifetime.StopApplication();
+                LogMigrationFailed(logger, ex, typeof(T).Name);
+
+                // Stop the application if migration fails
+                lifetime.StopApplication();
                 throw;
             }
+        }
+
+        private static async Task WaitForApplicationStarted(IHostApplicationLifetime lifetime,
+            CancellationToken stoppingToken)
+        {
+            TaskCompletionSource tcs = new();
+            using CancellationTokenRegistration registration =
+                lifetime.ApplicationStarted.Register(() => tcs.SetResult());
+            await using CancellationTokenRegistration _ =
+                stoppingToken.Register(() => tcs.TrySetCanceled(stoppingToken));
+            await tcs.Task;
         }
     }
 }

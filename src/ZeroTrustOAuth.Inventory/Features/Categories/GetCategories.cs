@@ -1,0 +1,39 @@
+using Facet.Extensions;
+
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
+using ZeroTrustOAuth.Auth;
+using ZeroTrustOAuth.Inventory.Infrastructure;
+using ZeroTrustOAuth.ServiceDefaults;
+
+namespace ZeroTrustOAuth.Inventory.Features.Categories;
+
+public record GetCategoriesResponse(IEnumerable<CategorySummaryDto> Categories);
+
+public class GetCategoriesEndpoint : IEndpoint
+{
+    public void MapEndpoint(IEndpointRouteBuilder app)
+    {
+        app.MapGet("categories", Handler)
+            .WithName("GetCategories")
+            .WithSummary("Get all categories")
+            .WithDescription("Retrieves a list of all categories in the inventory system.")
+                .WithTags("Categories")
+                .Produces<GetCategoriesResponse>(StatusCodes.Status200OK, "application/json")
+                .RequireAuthorization(ScopePolicies.InventoryProductRead);
+    }
+
+    private static async Task<Ok<GetCategoriesResponse>> Handler([FromServices] InventoryDbContext dbContext,
+        CancellationToken cancellationToken)
+    {
+        List<CategorySummaryDto> categories =
+            await dbContext.Categories.AsNoTracking()
+                .SelectFacet<CategorySummaryDto>()
+                .ToListAsync(cancellationToken);
+
+
+        return TypedResults.Ok(new GetCategoriesResponse(categories));
+    }
+}

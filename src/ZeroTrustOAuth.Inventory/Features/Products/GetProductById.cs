@@ -1,58 +1,48 @@
-using Carter;
-
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
-using ZeroTrustOAuth.Inventory.Data;
-using ZeroTrustOAuth.Inventory.Domain;
+using ZeroTrustOAuth.Auth;
+using ZeroTrustOAuth.Inventory.Infrastructure;
+using ZeroTrustOAuth.ServiceDefaults;
 
 namespace ZeroTrustOAuth.Inventory.Features.Products;
 
-[UsedImplicitly]
-public class GetProductById : ICarterModule
+public class GetProductByIdEndpoint : IEndpoint
 {
-    public void AddRoutes(IEndpointRouteBuilder app)
+    public void MapEndpoint(IEndpointRouteBuilder app)
     {
-        app.MapGet("/products/{id}", Handle)
+        app.MapGet("products/{id:guid}", Handler)
             .WithName("GetProductById")
-            .WithSummary("Get a specific product by ID")
+            .WithSummary("Get a product by ID")
+            .WithDescription(
+                "Retrieves detailed information about a specific product by its unique identifier, including full description and category details.")
             .WithTags("Products")
-            .Produces(StatusCodes.Status404NotFound);
+                .Produces<ProductDetailsDto>(StatusCodes.Status200OK, "application/json")
+                .Produces(StatusCodes.Status404NotFound)
+                .RequireAuthorization(ScopePolicies.InventoryProductRead);
     }
 
-    private static async Task<Results<Ok<Response>, NotFound>> Handle(string id, InventoryDbContext db,
-        CancellationToken ct)
+    private static async Task<Results<Ok<ProductDetailsDto>, NotFound>> Handler(
+        [FromRoute] Guid id,
+        [FromServices] InventoryDbContext dbContext,
+        CancellationToken cancellationToken)
     {
-        Product? product = await db.Products.FindAsync([id], ct);
+        ProductDetailsDto? product = await dbContext.Products
+            .Where(product => product.Id == id)
+            .Select(product => new ProductDetailsDto(
+                product.Id,
+                product.Sku,
+                product.Name,
+                product.Description,
+                product.Price,
+                product.Stock,
+                product.CategoryId,
+                product.Category != null ? product.Category.Name : null))
+            .SingleOrDefaultAsync(cancellationToken);
 
-        if (product is null)
-        {
-            return TypedResults.NotFound();
-        }
-
-        var response = new Response(
-            product.Id,
-            product.Name,
-            product.Description,
-            product.Sku,
-            product.QuantityInStock,
-            product.ReorderLevel,
-            product.Category,
-            product.SupplierId,
-            product.CreatedAt,
-            product.UpdatedAt);
-
-        return TypedResults.Ok(response);
+        return product is null
+            ? TypedResults.NotFound()
+            : TypedResults.Ok(product);
     }
-
-    public sealed record Response(
-        string Id,
-        string Name,
-        string? Description,
-        string Sku,
-        int QuantityInStock,
-        int ReorderLevel,
-        string? Category,
-        string? SupplierId,
-        DateTime CreatedAt,
-        DateTime UpdatedAt);
 }

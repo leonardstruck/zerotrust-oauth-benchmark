@@ -1,131 +1,124 @@
-using Carter;
-
-using ErrorOr;
+using Ardalis.Result;
+using Ardalis.Result.AspNetCore;
 
 using FluentValidation;
+using FluentValidation.Results;
 
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-using ZeroTrustOAuth.Data.Extensions;
-using ZeroTrustOAuth.Inventory.Data;
-using ZeroTrustOAuth.Inventory.Domain;
+using ZeroTrustOAuth.Auth;
+using ZeroTrustOAuth.Inventory.Domain.Products;
+using ZeroTrustOAuth.Inventory.Infrastructure;
 using ZeroTrustOAuth.ServiceDefaults;
+
+using IResult = Microsoft.AspNetCore.Http.IResult;
 
 namespace ZeroTrustOAuth.Inventory.Features.Products;
 
-[UsedImplicitly]
-public class UpdateProduct : ICarterModule
+public record UpdateProductRequest(
+    string? Sku,
+    string? Name,
+    decimal? Price,
+    int? Stock,
+    string? Description,
+    Guid? CategoryId);
+
+public class UpdateProductRequestValidator : AbstractValidator<UpdateProductRequest>
 {
-    public void AddRoutes(IEndpointRouteBuilder app)
+    public UpdateProductRequestValidator()
     {
-        app.MapPatch<Command>("/products/{id}", Handle)
+        RuleFor(request => request)
+            .Must(request =>
+                request.Sku is not null || request.Name is not null || request.Price is not null ||
+                request.Stock is not null || request.Description is not null || request.CategoryId is not null)
+            .WithMessage("At least one property must be provided.");
+
+        When(request => request.Sku is not null, () => RuleFor(request => request.Sku).NotEmpty());
+        When(request => request.Name is not null, () => RuleFor(request => request.Name).NotEmpty());
+        When(request => request.Price is not null, () => RuleFor(request => request.Price!.Value).GreaterThan(0));
+        When(request => request.Stock is not null,
+            () => RuleFor(request => request.Stock!.Value).GreaterThanOrEqualTo(0));
+        When(request => request.CategoryId is not null,
+            () => RuleFor(request => request.CategoryId).NotEqual(Guid.Empty));
+    }
+}
+
+public class UpdateProductEndpoint : IEndpoint
+{
+    public void MapEndpoint(IEndpointRouteBuilder app)
+    {
+        app.MapPut("products/{id:guid}", Handler)
             .WithName("UpdateProduct")
-            .WithSummary("Update an existing product")
-            .WithTags("Products");
+            .WithSummary("Update a product")
+            .WithDescription(
+                "Updates an existing product's properties including SKU, name, price, stock, description, and category. At least one property must be provided.")
+                .WithTags("Products")
+                .Produces<ProductDetailsDto>(StatusCodes.Status200OK, "application/json")
+                .ProducesProblem(StatusCodes.Status400BadRequest)
+                .Produces(StatusCodes.Status404NotFound)
+                .RequireAuthorization(ScopePolicies.InventoryProductManage);
     }
 
-    private static async Task<IResult> Handle(string id,
-        Command command,
-        InventoryDbContext db,
-        CancellationToken ct)
+    private static async Task<IResult> Handler(
+        [FromRoute] Guid id,
+        [FromBody] UpdateProductRequest request,
+        [FromServices] InventoryDbContext dbContext,
+        [FromServices] IValidator<UpdateProductRequest> validator,
+        CancellationToken cancellationToken)
     {
-        Product? product = await db.Products.FindAsync([id], ct);
+        ValidationResult validation = await validator.ValidateAsync(request, cancellationToken);
+        if (!validation.IsValid)
+        {
+        }
 
+        Product? product = await dbContext.Products.FindAsync([id], cancellationToken);
         if (product is null)
         {
-            return Results.NotFound();
+            return TypedResults.NotFound();
         }
 
-        ErrorOr<Success> updateResult = product.Update(
-            command.Name,
-            command.Sku,
-            command.ReorderLevel,
-            command.Description,
-            command.Category,
-            command.SupplierId);
-
-        if (updateResult.IsError)
+        if (request.CategoryId is not null)
         {
-            return updateResult.ToProblem();
-        }
-
-        try
-        {
-            await db.SaveChangesAsync(ct);
-        }
-        catch (DbUpdateException ex) when (ex.IsUniqueConstraintViolation("Sku"))
-        {
-            return Results.ValidationProblem(new Dictionary<string, string[]>
+            bool categoryExists = await dbContext.Categories
+                .AnyAsync(category => category.Id == request.CategoryId, cancellationToken);
+            if (!categoryExists)
             {
-                ["Sku"] = [$"A product with SKU '{command.Sku}' already exists."]
-            });
+                return TypedResults.ValidationProblem(new Dictionary<string, string[]>
+                {
+                    ["CategoryId"] = ["Category not found."]
+                });
+            }
         }
 
-        var response = new Response(
-            product.Id,
-            product.Name,
-            product.Description,
-            product.Sku,
-            product.QuantityInStock,
-            product.ReorderLevel,
-            product.Category,
-            product.SupplierId,
-            product.CreatedAt,
-            product.UpdatedAt);
+        Result updateResult = product.Update(
+            request.Sku,
+            request.Name,
+            request.Price,
+            request.Stock,
+            request.Description,
+            request.CategoryId);
 
-        return Results.Ok(response);
-    }
-
-    public sealed record Command(
-        string? Name,
-        string? Description,
-        string? Sku,
-        int? ReorderLevel,
-        string? Category,
-        string? SupplierId);
-
-    public sealed record Response(
-        string Id,
-        string Name,
-        string? Description,
-        string Sku,
-        int QuantityInStock,
-        int ReorderLevel,
-        string? Category,
-        string? SupplierId,
-        DateTime CreatedAt,
-        DateTime UpdatedAt);
-
-    [UsedImplicitly]
-    public class Validator : AbstractValidator<Command>
-    {
-        public Validator()
+        if (!updateResult.IsSuccess)
         {
-            RuleFor(x => x.Name)
-                .NotEmpty().WithMessage("Product name cannot be empty if provided.")
-                .MaximumLength(200).WithMessage("Product name must not exceed 200 characters.")
-                .When(x => x.Name is not null);
-
-            RuleFor(x => x.Sku)
-                .NotEmpty().WithMessage("SKU cannot be empty if provided.")
-                .MaximumLength(50).WithMessage("SKU must not exceed 50 characters.")
-                .When(x => x.Sku is not null);
-
-            RuleFor(x => x.ReorderLevel)
-                .GreaterThanOrEqualTo(0).WithMessage("Reorder level cannot be negative.")
-                .When(x => x.ReorderLevel.HasValue);
-
-            RuleFor(x => x.Description)
-                .MaximumLength(1000).WithMessage("Description must not exceed 1000 characters.")
-                .When(x => x.Description is not null);
-
-            RuleFor(x => x.Category)
-                .MaximumLength(100).WithMessage("Category must not exceed 100 characters.")
-                .When(x => x.Category is not null);
-
-            RuleFor(x => x.SupplierId)
-                .MaximumLength(50).WithMessage("Supplier ID must not exceed 50 characters.")
-                .When(x => x.SupplierId is not null);
+            return updateResult.ToMinimalApiResult();
         }
+
+        await dbContext.SaveChangesAsync(cancellationToken);
+
+        ProductDetailsDto productDetails = await dbContext.Products
+            .Where(savedProduct => savedProduct.Id == product.Id)
+            .Select(savedProduct => new ProductDetailsDto(
+                savedProduct.Id,
+                savedProduct.Sku,
+                savedProduct.Name,
+                savedProduct.Description,
+                savedProduct.Price,
+                savedProduct.Stock,
+                savedProduct.CategoryId,
+                savedProduct.Category != null ? savedProduct.Category.Name : null))
+            .SingleAsync(cancellationToken);
+
+        return TypedResults.Ok(productDetails);
     }
 }

@@ -20,3 +20,15 @@ variable "keycloak_password" {
   type        = string
   sensitive   = true
 }
+
+variable "gateway_api_client_secret" {
+  description = "Confidential client secret for the gateway-api client."
+  type        = string
+  sensitive   = true
+}
+
+variable "inventory_api_client_secret" {
+  description = "Confidential client secret for the inventory-api client."
+  type        = string
+  sensitive   = true
+}

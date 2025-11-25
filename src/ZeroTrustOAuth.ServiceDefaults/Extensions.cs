@@ -1,10 +1,11 @@
+using System.Reflection;
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.ServiceDiscovery;
 
 using OpenTelemetry;
 using OpenTelemetry.Metrics;
@@ -16,11 +17,11 @@ namespace ZeroTrustOAuth.ServiceDefaults;
 // This project should be referenced by each service project in your solution.
 // To learn more about using this project, see https://aka.ms/dotnet/aspire/service-defaults
 /// <summary>
-/// Provides extension methods that add common Aspire service defaults to an application.
+///     Provides extension methods that add common Aspire service defaults to an application.
 /// </summary>
 /// <remarks>
-/// The extensions enable service discovery, resilience, health checks, and OpenTelemetry instrumentation/export.
-/// Reference this project from each service project to apply consistent defaults.
+///     The extensions enable service discovery, resilience, health checks, and OpenTelemetry instrumentation/export.
+///     Reference this project from each service project to apply consistent defaults.
 /// </remarks>
 [PublicAPI]
 public static class ServiceDefaultsExtensions
@@ -28,17 +29,49 @@ public static class ServiceDefaultsExtensions
     private const string HealthEndpointPath = "/health";
     private const string AlivenessEndpointPath = "/alive";
 
+    /// <summary>
+    ///     Maps default health check endpoints to the web application.
+    /// </summary>
+    /// <param name="app">The web application.</param>
+    /// <returns>The same <see cref="WebApplication" /> instance for chaining.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="app" /> is <c>null</c>.</exception>
+    /// <remarks>
+    ///     Endpoints are only mapped in development environments to avoid exposing health information in production.
+    /// </remarks>
+    public static WebApplication MapDefaultEndpoints(this WebApplication app)
+    {
+        ArgumentNullException.ThrowIfNull(app);
+        // Adding health checks endpoints to applications in non-development environments has security implications.
+        // See https://aka.ms/dotnet/aspire/healthchecks for details before enabling these endpoints in non-development environments.
+        if (app.Environment.IsDevelopment())
+        {
+            // All health checks must pass for app to be considered ready to accept traffic after starting
+            app.MapHealthChecks(HealthEndpointPath);
+
+            // Only health checks tagged with the "live" tag must pass for app to be considered alive
+            app.MapHealthChecks(AlivenessEndpointPath,
+                new HealthCheckOptions { Predicate = r => r.Tags.Contains("live") });
+        }
+
+        return app;
+    }
+
     /// <param name="builder">The host application builder.</param>
     /// <typeparam name="TBuilder">The type of the host application builder.</typeparam>
     extension<TBuilder>(TBuilder builder) where TBuilder : IHostApplicationBuilder
     {
         /// <summary>
-        /// Adds common service defaults to the specified host application builder.
+        ///     Adds common service defaults to the specified host application builder.
         /// </summary>
-        /// <returns>The same <typeparamref name="TBuilder"/> instance for chaining.</returns>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="builder"/> is <c>null</c>.</exception>
+        /// <returns>The same <typeparamref name="TBuilder" /> instance for chaining.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="builder" /> is <c>null</c>.</exception>
         public TBuilder AddServiceDefaults()
         {
+            if (Assembly.GetEntryAssembly()?.GetName().Name == "GetDocument.Insider")
+            {
+                return builder;
+            }
+
             ArgumentNullException.ThrowIfNull(builder);
             builder.ConfigureOpenTelemetry();
 
@@ -55,19 +88,14 @@ public static class ServiceDefaultsExtensions
                 http.AddServiceDiscovery();
             });
 
-            builder.Services.Configure<ServiceDiscoveryOptions>(options =>
-            {
-                options.AllowedSchemes = ["https"];
-            });
-
             return builder;
         }
 
         /// <summary>
-        /// Configures OpenTelemetry logging, metrics, and tracing for the application.
+        ///     Configures OpenTelemetry logging, metrics, and tracing for the application.
         /// </summary>
-        /// <returns>The same <typeparamref name="TBuilder"/> instance for chaining.</returns>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="builder"/> is <c>null</c>.</exception>
+        /// <returns>The same <typeparamref name="TBuilder" /> instance for chaining.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="builder" /> is <c>null</c>.</exception>
         public TBuilder ConfigureOpenTelemetry()
         {
             ArgumentNullException.ThrowIfNull(builder);
@@ -104,10 +132,28 @@ public static class ServiceDefaultsExtensions
         }
 
         /// <summary>
-        /// Adds and configures OpenTelemetry exporters based on application configuration.
+        ///     Executes the provided action when the application is not running as the code-generation host
+        ///     (the entry assembly name is not `GetDocument.Insider`).
         /// </summary>
-        /// <returns>The same <typeparamref name="TBuilder"/> instance for chaining.</returns>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="builder"/> is <c>null</c>.</exception>
+        /// <param name="action">The action to execute with the builder.</param>
+        /// <returns>The same <typeparamref name="TBuilder" /> instance for chaining.</returns>
+        public TBuilder ExecuteWhenNotGenerating(Action<TBuilder> action)
+        {
+            ArgumentNullException.ThrowIfNull(action);
+
+            if (Assembly.GetEntryAssembly()?.GetName().Name != "GetDocument.Insider")
+            {
+                action(builder);
+            }
+
+            return builder;
+        }
+
+        /// <summary>
+        ///     Adds and configures OpenTelemetry exporters based on application configuration.
+        /// </summary>
+        /// <returns>The same <typeparamref name="TBuilder" /> instance for chaining.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="builder" /> is <c>null</c>.</exception>
         public TBuilder AddOpenTelemetryExporters()
         {
             ArgumentNullException.ThrowIfNull(builder);
@@ -122,10 +168,10 @@ public static class ServiceDefaultsExtensions
         }
 
         /// <summary>
-        /// Adds the default health checks used by the application.
+        ///     Adds the default health checks used by the application.
         /// </summary>
-        /// <returns>The same <typeparamref name="TBuilder"/> instance for chaining.</returns>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="builder"/> is <c>null</c>.</exception>
+        /// <returns>The same <typeparamref name="TBuilder" /> instance for chaining.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="builder" /> is <c>null</c>.</exception>
         public TBuilder AddDefaultHealthChecks()
         {
             ArgumentNullException.ThrowIfNull(builder);
@@ -135,32 +181,5 @@ public static class ServiceDefaultsExtensions
 
             return builder;
         }
-    }
-
-    /// <summary>
-    /// Maps default health check endpoints to the web application.
-    /// </summary>
-    /// <param name="app">The web application.</param>
-    /// <returns>The same <see cref="WebApplication"/> instance for chaining.</returns>
-    /// <exception cref="ArgumentNullException">Thrown if <paramref name="app"/> is <c>null</c>.</exception>
-    /// <remarks>
-    /// Endpoints are only mapped in development environments to avoid exposing health information in production.
-    /// </remarks>
-    public static WebApplication MapDefaultEndpoints(this WebApplication app)
-    {
-        ArgumentNullException.ThrowIfNull(app);
-        // Adding health checks endpoints to applications in non-development environments has security implications.
-        // See https://aka.ms/dotnet/aspire/healthchecks for details before enabling these endpoints in non-development environments.
-        if (app.Environment.IsDevelopment())
-        {
-            // All health checks must pass for app to be considered ready to accept traffic after starting
-            app.MapHealthChecks(HealthEndpointPath);
-
-            // Only health checks tagged with the "live" tag must pass for app to be considered alive
-            app.MapHealthChecks(AlivenessEndpointPath,
-                new HealthCheckOptions { Predicate = r => r.Tags.Contains("live") });
-        }
-
-        return app;
     }
 }

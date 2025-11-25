@@ -1,18 +1,15 @@
 using Microsoft.EntityFrameworkCore;
 
-using ZeroTrustOAuth.Inventory.Domain;
+using ZeroTrustOAuth.Inventory.Domain.Categories;
+using ZeroTrustOAuth.Inventory.Domain.Products;
 
-namespace ZeroTrustOAuth.Inventory.Data;
+namespace ZeroTrustOAuth.Inventory.Infrastructure;
 
-/// <summary>
-/// Database context for the Inventory service.
-/// </summary>
 public class InventoryDbContext(DbContextOptions<InventoryDbContext> options) : DbContext(options)
 {
-    /// <summary>
-    /// Gets or sets the Products DbSet.
-    /// </summary>
     public DbSet<Product> Products => Set<Product>();
+    public DbSet<Category> Categories => Set<Category>();
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

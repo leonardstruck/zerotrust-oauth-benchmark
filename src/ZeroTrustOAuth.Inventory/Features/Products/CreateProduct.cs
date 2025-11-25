@@ -1,128 +1,113 @@
-using Carter;
-
-using ErrorOr;
+using Ardalis.Result;
+using Ardalis.Result.AspNetCore;
 
 using FluentValidation;
+using FluentValidation.Results;
 
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-using ZeroTrustOAuth.Data.Extensions;
-using ZeroTrustOAuth.Inventory.Data;
-using ZeroTrustOAuth.Inventory.Domain;
+using ZeroTrustOAuth.Auth;
+using ZeroTrustOAuth.Inventory.Domain.Products;
+using ZeroTrustOAuth.Inventory.Infrastructure;
 using ZeroTrustOAuth.ServiceDefaults;
+
+using IResult = Microsoft.AspNetCore.Http.IResult;
 
 namespace ZeroTrustOAuth.Inventory.Features.Products;
 
-[UsedImplicitly]
-public class CreateProduct : ICarterModule
+public record CreateProductRequest(
+    string Sku,
+    string Name,
+    decimal Price,
+    int Stock,
+    string? Description,
+    Guid? CategoryId);
+
+public class CreateProductRequestValidator : AbstractValidator<CreateProductRequest>
 {
-    public void AddRoutes(IEndpointRouteBuilder app)
+    public CreateProductRequestValidator()
     {
-        app.MapPost<Command>("/products", Handle)
+        RuleFor(request => request.Sku).NotEmpty();
+        RuleFor(request => request.Name).NotEmpty();
+        RuleFor(request => request.Price).GreaterThan(0);
+        RuleFor(request => request.Stock).GreaterThanOrEqualTo(0);
+
+        When(request => request.CategoryId is not null,
+            () => RuleFor(request => request.CategoryId).NotEqual(Guid.Empty));
+    }
+}
+
+public class CreateProductEndpoint : IEndpoint
+{
+    public void MapEndpoint(IEndpointRouteBuilder app)
+    {
+        app.MapPost("products", Handler)
             .WithName("CreateProduct")
             .WithSummary("Create a new product")
-            .WithTags("Products");
+            .WithDescription(
+                "Creates a new product in the inventory system with SKU, name, price, stock quantity, optional description, and optional category assignment.")
+                .WithTags("Products")
+                .Produces<ProductDetailsDto>(StatusCodes.Status201Created, "application/json")
+                .ProducesProblem(StatusCodes.Status400BadRequest)
+                .RequireAuthorization(ScopePolicies.InventoryProductManage);
     }
 
-    private static async Task<IResult> Handle(Command command,
-        InventoryDbContext db,
-        CancellationToken ct)
+    private static async Task<IResult> Handler(
+        [FromBody] CreateProductRequest request,
+        [FromServices] InventoryDbContext dbContext,
+        [FromServices] IValidator<CreateProductRequest> validator,
+        CancellationToken cancellationToken)
     {
-        ErrorOr<Product> productResult = Product.Create(
-            command.Name,
-            command.Sku,
-            command.QuantityInStock,
-            command.ReorderLevel,
-            command.Description,
-            command.Category,
-            command.SupplierId);
-
-        if (productResult.IsError)
+        ValidationResult validation = await validator.ValidateAsync(request, cancellationToken);
+        if (!validation.IsValid)
         {
-            return productResult.ToProblem();
         }
 
-        var product = productResult.Value;
-        db.Products.Add(product);
-
-        try
+        if (request.CategoryId is not null)
         {
-            await db.SaveChangesAsync(ct);
-        }
-        catch (DbUpdateException ex) when (ex.IsUniqueConstraintViolation("Sku"))
-        {
-            return Results.ValidationProblem(new Dictionary<string, string[]>
+            bool categoryExists = await dbContext.Categories
+                .AnyAsync(category => category.Id == request.CategoryId, cancellationToken);
+            if (!categoryExists)
             {
-                ["Sku"] = [$"A product with SKU '{command.Sku}' already exists."]
-            });
+                return TypedResults.ValidationProblem(new Dictionary<string, string[]>
+                {
+                    ["CategoryId"] = ["Category not found."]
+                });
+            }
         }
 
-        var response = new Response(
-            product.Id,
-            product.Name,
-            product.Description,
-            product.Sku,
-            product.QuantityInStock,
-            product.ReorderLevel,
-            product.Category,
-            product.SupplierId,
-            product.CreatedAt,
-            product.UpdatedAt);
+        Result<Product> createResult = Product.Create(
+            request.Sku,
+            request.Name,
+            request.Price,
+            request.Stock,
+            request.Description,
+            request.CategoryId);
 
-        return Results.Created($"/api/inventory/products/{product.Id}", response);
-    }
-
-    public sealed record Command(
-        string Name,
-        string? Description,
-        string Sku,
-        int QuantityInStock,
-        int ReorderLevel,
-        string? Category,
-        string? SupplierId);
-
-    public sealed record Response(
-        string Id,
-        string Name,
-        string? Description,
-        string Sku,
-        int QuantityInStock,
-        int ReorderLevel,
-        string? Category,
-        string? SupplierId,
-        DateTime CreatedAt,
-        DateTime UpdatedAt);
-
-    [UsedImplicitly]
-    public class Validator : AbstractValidator<Command>
-    {
-        public Validator()
+        if (!createResult.IsSuccess)
         {
-            RuleFor(x => x.Name)
-                .NotEmpty().WithMessage("Product name is required.")
-                .MaximumLength(200).WithMessage("Product name must not exceed 200 characters.");
-
-            RuleFor(x => x.Sku)
-                .NotEmpty().WithMessage("SKU is required.")
-                .MaximumLength(50).WithMessage("SKU must not exceed 50 characters.");
-
-            RuleFor(x => x.QuantityInStock)
-                .GreaterThanOrEqualTo(0).WithMessage("Quantity in stock cannot be negative.");
-
-            RuleFor(x => x.ReorderLevel)
-                .GreaterThanOrEqualTo(0).WithMessage("Reorder level cannot be negative.");
-
-            RuleFor(x => x.Description)
-                .MaximumLength(1000).WithMessage("Description must not exceed 1000 characters.")
-                .When(x => x.Description is not null);
-
-            RuleFor(x => x.Category)
-                .MaximumLength(100).WithMessage("Category must not exceed 100 characters.")
-                .When(x => x.Category is not null);
-
-            RuleFor(x => x.SupplierId)
-                .MaximumLength(50).WithMessage("Supplier ID must not exceed 50 characters.")
-                .When(x => x.SupplierId is not null);
+            return createResult.ToMinimalApiResult();
         }
+
+        Product product = createResult.Value!;
+
+        await dbContext.Products.AddAsync(product, cancellationToken);
+        await dbContext.SaveChangesAsync(cancellationToken);
+
+        ProductDetailsDto productDetails = await dbContext.Products
+            .Where(savedProduct => savedProduct.Id == product.Id)
+            .Select(savedProduct => new ProductDetailsDto(
+                savedProduct.Id,
+                savedProduct.Sku,
+                savedProduct.Name,
+                savedProduct.Description,
+                savedProduct.Price,
+                savedProduct.Stock,
+                savedProduct.CategoryId,
+                savedProduct.Category != null ? savedProduct.Category.Name : null))
+            .SingleAsync(cancellationToken);
+
+        return TypedResults.Created($"/products/{productDetails.Id}", productDetails);
     }
 }

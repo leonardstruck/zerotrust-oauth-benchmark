@@ -9,4 +9,4 @@ public class OpenTofuProvisionerResource : ContainerResource
     {
         ShellExecution = true;
     }
-};
+}
