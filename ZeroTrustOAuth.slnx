@@ -9,6 +9,7 @@
     </Folder>
     <Folder Name="/src/">
         <Project Path="src/ZeroTrustOAuth.Data/ZeroTrustOAuth.Data.csproj"/>
+        <Project Path="src/ZeroTrustOAuth.Auth/ZeroTrustOAuth.Auth.csproj"/>
     </Folder>
     <Folder Name="/src/Orchestration/">
         <Project Path="src/ZeroTrustOAuth.AppHost/ZeroTrustOAuth.AppHost.csproj"/>

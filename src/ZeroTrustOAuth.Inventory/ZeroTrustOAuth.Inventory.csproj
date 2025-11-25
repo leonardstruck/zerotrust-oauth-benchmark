@@ -29,6 +29,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\ZeroTrustOAuth.ServiceDefaults\ZeroTrustOAuth.ServiceDefaults.csproj"/>
+        <ProjectReference Include="..\ZeroTrustOAuth.Auth\ZeroTrustOAuth.Auth.csproj"/>
         <ProjectReference Include="..\ZeroTrustOAuth.Data\ZeroTrustOAuth.Data.csproj"/>
     </ItemGroup>
 
