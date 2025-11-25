@@ -15,12 +15,13 @@ builder.AddServiceDefaults();
 
 builder.Services.SwaggerDocument(o =>
 {
-    o.EndpointFilter = ep => ep.EndpointTags?.Contains("internal") is null or false;
+    o.EndpointFilter = ep => ep.EndpointTags?.Contains("Internal") is null or false;
 });
 
 builder.Services.SwaggerDocument(o =>
 {
-    o.EndpointFilter = ep => ep.EndpointTags?.Contains("internal") is true;
+    o.EndpointFilter = ep => ep.EndpointTags?.Contains("Internal") is true;
+    o.AutoTagPathSegmentIndex = 2;
     o.DocumentSettings = s =>
     {
         s.DocumentName = "internal";

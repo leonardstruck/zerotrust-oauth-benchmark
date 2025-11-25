@@ -8,18 +8,18 @@ public sealed class ProductsGroup : Group
     {
         Configure("products", ep =>
         {
-            ep.Description(x => x.WithTags("products"));
+            ep.Tags("Products");
         });
     }
 }
 
-public sealed class InternalProductsGroup : SubGroup<ProductsGroup>
+public sealed class InternalProductsGroup : SubGroup<InternalGroup>
 {
     public InternalProductsGroup()
     {
-        Configure("internal", ep =>
+        Configure("products", ep =>
         {
-            ep.Description(x => x.WithTags("internal"));
+            ep.Tags("Products");
         });
     }
 }
