@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -49,6 +50,13 @@ public static class AuthServiceCollectionExtensions
         _ = securityOptions.AuthFlow;
 
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IClaimsTransformation, ScopeClaimsTransformation>());
+        services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+
+        services.AddScoped<JwtPropagationTokenProvider>();
+        services.AddScoped<OpaqueIntrospectionTokenProvider>();
+        services.AddScoped<TokenExchangeTokenProvider>();
+
+        services.AddScoped<ITokenProvider>(sp => TokenProviderFactory.Create(sp));
 
         return services;
     }
@@ -76,11 +84,10 @@ public static class AuthServiceCollectionExtensions
         return services;
     }
 
-    private static AuthorizationPolicyBuilder RequireScope(
+    private static void RequireScope(
         this AuthorizationPolicyBuilder builder,
         string scope)
     {
         builder.RequireClaim(ScopeClaimType, scope);
-        return builder;
     }
 }
