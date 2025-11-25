@@ -40,6 +40,7 @@ WebApplication app = builder.Build();
 
 app.UseHttpsRedirection();
 app.UseAuthentication();
+app.UseAuthTelemetry();
 app.UseAuthorization();
 
 app.MapOpenApi();
