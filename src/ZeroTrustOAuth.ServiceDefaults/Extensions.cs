@@ -108,7 +108,6 @@ public static class ServiceDefaultsExtensions
             builder.Services.AddOpenTelemetry()
                 .WithMetrics(metrics =>
                 {
-                    metrics.AddMeter(AuthMetrics.MeterName);
                     metrics.AddAspNetCoreInstrumentation()
                         .AddHttpClientInstrumentation()
                         .AddRuntimeInstrumentation();

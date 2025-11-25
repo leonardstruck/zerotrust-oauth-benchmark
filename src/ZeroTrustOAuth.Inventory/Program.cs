@@ -1,7 +1,6 @@
 using FluentValidation;
 
 using ZeroTrustOAuth.Data.Extensions;
-using ZeroTrustOAuth.Auth;
 using ZeroTrustOAuth.Inventory.Features.Categories;
 using ZeroTrustOAuth.Inventory.Features.Products;
 using ZeroTrustOAuth.Inventory.Infrastructure;
@@ -30,17 +29,16 @@ builder.ExecuteWhenNotGenerating(_ =>
     builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 });
 
+builder.Services.AddAuthentication();
+builder.Services.AddAuthorization();
 
-builder.Services
-    .AddZeroTrustAuthentication(builder, ServiceNames.Identity, "zerotrust-oauth", "inventory-api")
-    .AddZeroTrustAuthorization();
+
 builder.Services.AddOpenApi();
 
 WebApplication app = builder.Build();
 
 app.UseHttpsRedirection();
 app.UseAuthentication();
-app.UseAuthTelemetry();
 app.UseAuthorization();
 
 app.MapOpenApi();
