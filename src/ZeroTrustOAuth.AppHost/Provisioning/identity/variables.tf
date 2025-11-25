@@ -20,3 +20,9 @@ variable "keycloak_password" {
   type        = string
   sensitive   = true
 }
+
+variable "inventory_client_secrets" {
+  description = "Map of Keycloak client IDs to confidential client secrets provided by the Aspire AppHost."
+  type        = map(string)
+  sensitive   = true
+}
