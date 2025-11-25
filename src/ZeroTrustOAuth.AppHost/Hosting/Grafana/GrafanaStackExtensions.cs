@@ -47,23 +47,23 @@ internal static class GrafanaStackExtensions
             .WithContainerFiles(
                 "/otel-lgtm",
                 [
-                    new ContainerFile
+                    new ContainerFile()
                     {
                         Name = "otelcol-config-export-http.yaml",
                         Contents = """
-                                   service:
-                                     pipelines:
-                                       traces:
-                                         exporters: [otlphttp/traces, otlp/aspire]
-                                       metrics:
-                                         exporters: [otlphttp/metrics, otlp/aspire]
-                                       logs:
-                                         exporters: [otlphttp/logs, otlp/aspire]
-                                   exporters:
-                                     otlp/aspire:
-                                       endpoint: ${env:OTEL_EXPORTER_OTLP_ENDPOINT}
-                                   """
-                    }
+                        service:
+                          pipelines:
+                            traces:
+                              exporters: [otlphttp/traces, otlp/aspire]
+                            metrics:
+                              exporters: [otlphttp/metrics, otlp/aspire]
+                            logs:
+                              exporters: [otlphttp/logs, otlp/aspire]
+                        exporters:
+                          otlp/aspire:
+                            endpoint: ${env:OTEL_EXPORTER_OTLP_ENDPOINT}
+                        """,
+                    },
                 ]
             );
     }
@@ -79,14 +79,14 @@ internal static class GrafanaStackExtensions
             .WithEnvironment(context =>
             {
                 context.Resource.TryGetLastAnnotation<OtlpExporterAnnotation>(
-                    out OtlpExporterAnnotation? otlpAnnotation
+                    out var otlpAnnotation
                 );
 
-                EndpointReference endpoint = otlpAnnotation?.RequiredProtocol switch
+                var endpoint = otlpAnnotation?.RequiredProtocol switch
                 {
                     OtlpProtocol.HttpProtobuf => grafanaBuilder.Resource.OtlpHttpEndpoint,
                     OtlpProtocol.Grpc => grafanaBuilder.Resource.OtlpEndpoint,
-                    _ => grafanaBuilder.Resource.OtlpEndpoint
+                    _ => grafanaBuilder.Resource.OtlpEndpoint,
                 };
 
                 context.EnvironmentVariables["OTEL_EXPORTER_OTLP_ENDPOINT"] = endpoint;
