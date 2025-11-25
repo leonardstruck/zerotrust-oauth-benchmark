@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -15,9 +14,10 @@ public class GetProductByIdEndpoint : IEndpoint
         app.MapGet("products/{id:guid}", Handler)
             .WithName("GetProductById")
             .WithSummary("Get a product by ID")
-            .WithDescription("Retrieves detailed information about a specific product by its unique identifier, including full description and category details.")
+            .WithDescription(
+                "Retrieves detailed information about a specific product by its unique identifier, including full description and category details.")
             .WithTags("Products")
-            .Produces<ProductDetailsDto>(StatusCodes.Status200OK, contentType: "application/json")
+            .Produces<ProductDetailsDto>(StatusCodes.Status200OK, "application/json")
             .Produces(StatusCodes.Status404NotFound);
     }
 

@@ -1,6 +1,5 @@
 using Facet.Extensions;
 
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -19,7 +18,7 @@ public class GetCategoryByIdEndpoint : IEndpoint
             .WithSummary("Get a category by ID")
             .WithDescription("Retrieves detailed information about a specific category by its unique identifier.")
             .WithTags("Categories")
-            .Produces<CategoryDetailsDto>(StatusCodes.Status200OK, contentType: "application/json")
+            .Produces<CategoryDetailsDto>(StatusCodes.Status200OK, "application/json")
             .Produces(StatusCodes.Status404NotFound);
     }
 

@@ -1,6 +1,5 @@
 using Facet.Extensions;
 
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -21,7 +20,7 @@ public class GetCategoriesEndpoint : IEndpoint
             .WithSummary("Get all categories")
             .WithDescription("Retrieves a list of all categories in the inventory system.")
             .WithTags("Categories")
-            .Produces<GetCategoriesResponse>(StatusCodes.Status200OK, contentType: "application/json");
+            .Produces<GetCategoriesResponse>(StatusCodes.Status200OK, "application/json");
     }
 
     private static async Task<Ok<GetCategoriesResponse>> Handler([FromServices] InventoryDbContext dbContext,

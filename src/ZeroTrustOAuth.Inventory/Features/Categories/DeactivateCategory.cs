@@ -1,10 +1,13 @@
+using Ardalis.Result;
 using Ardalis.Result.AspNetCore;
-using Microsoft.AspNetCore.Http;
+
 using Microsoft.AspNetCore.Mvc;
 
 using ZeroTrustOAuth.Inventory.Domain.Categories;
 using ZeroTrustOAuth.Inventory.Infrastructure;
 using ZeroTrustOAuth.ServiceDefaults;
+
+using IResult = Microsoft.AspNetCore.Http.IResult;
 
 namespace ZeroTrustOAuth.Inventory.Features.Categories;
 
@@ -15,7 +18,8 @@ public class DeactivateCategoryEndpoint : IEndpoint
         app.MapPost("categories/{id:guid}/deactivate", Handler)
             .WithName("DeactivateCategory")
             .WithSummary("Deactivate a category")
-            .WithDescription("Deactivates a category, making it unavailable for use in the inventory system while preserving its data.")
+            .WithDescription(
+                "Deactivates a category, making it unavailable for use in the inventory system while preserving its data.")
             .WithTags("Categories")
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status400BadRequest)
@@ -33,7 +37,7 @@ public class DeactivateCategoryEndpoint : IEndpoint
             return TypedResults.NotFound();
         }
 
-        Ardalis.Result.Result deactivateResult = category.Deactivate();
+        Result deactivateResult = category.Deactivate();
         if (!deactivateResult.IsSuccess)
         {
             return deactivateResult.ToMinimalApiResult();

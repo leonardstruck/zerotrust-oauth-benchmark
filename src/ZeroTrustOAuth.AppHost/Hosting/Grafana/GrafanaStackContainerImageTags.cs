@@ -1,4 +1,3 @@
-
 namespace ZeroTrustOAuth.AppHost.Hosting.Grafana;
 
 public static class GrafanaStackContainerImageTags

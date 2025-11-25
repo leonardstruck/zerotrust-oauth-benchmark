@@ -2,13 +2,11 @@ using Ardalis.Result;
 using Ardalis.Result.AspNetCore;
 using Ardalis.Result.FluentValidation;
 
-using Facet.Extensions;
 using Facet.Extensions.EFCore;
 
 using FluentValidation;
 using FluentValidation.Results;
 
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 using ZeroTrustOAuth.Inventory.Domain.Categories;
@@ -40,9 +38,10 @@ public class UpdateCategoryEndpoint : IEndpoint
         app.MapPut("categories/{id:guid}", Handler)
             .WithName("UpdateCategory")
             .WithSummary("Update a category")
-            .WithDescription("Updates an existing category's name and/or description. At least one property must be provided.")
+            .WithDescription(
+                "Updates an existing category's name and/or description. At least one property must be provided.")
             .WithTags("Categories")
-            .Produces<CategoryDetailsDto>(StatusCodes.Status200OK, contentType: "application/json")
+            .Produces<CategoryDetailsDto>(StatusCodes.Status200OK, "application/json")
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .Produces(StatusCodes.Status404NotFound);
     }

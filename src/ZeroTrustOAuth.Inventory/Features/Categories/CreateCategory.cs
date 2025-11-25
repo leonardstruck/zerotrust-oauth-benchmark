@@ -35,9 +35,10 @@ public class CreateCategoryEndpoint : IEndpoint
         app.MapPost("categories", Handler)
             .WithName("CreateCategory")
             .WithSummary("Create a new category")
-            .WithDescription("Creates a new category in the inventory system with the provided name, description, and active status.")
+            .WithDescription(
+                "Creates a new category in the inventory system with the provided name, description, and active status.")
             .WithTags("Categories")
-            .Produces<CategoryDetailsDto>(StatusCodes.Status201Created, contentType: "application/json")
+            .Produces<CategoryDetailsDto>(StatusCodes.Status201Created, "application/json")
             .ProducesProblem(StatusCodes.Status400BadRequest);
     }
 

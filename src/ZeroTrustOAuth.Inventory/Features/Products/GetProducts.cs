@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -17,9 +16,10 @@ public class GetProductsEndpoint : IEndpoint
         app.MapGet("products", Handler)
             .WithName("GetProducts")
             .WithSummary("Get all products")
-            .WithDescription("Retrieves a list of all products in the inventory system, including their SKU, name, price, stock, and associated category.")
+            .WithDescription(
+                "Retrieves a list of all products in the inventory system, including their SKU, name, price, stock, and associated category.")
             .WithTags("Products")
-            .Produces<GetProductsResponse>(StatusCodes.Status200OK, contentType: "application/json");
+            .Produces<GetProductsResponse>(StatusCodes.Status200OK, "application/json");
     }
 
     private static async Task<Ok<GetProductsResponse>> Handler(

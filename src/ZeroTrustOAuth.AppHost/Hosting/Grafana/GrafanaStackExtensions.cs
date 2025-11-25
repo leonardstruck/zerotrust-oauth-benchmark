@@ -15,8 +15,8 @@ internal static class GrafanaStackExtensions
         bool enableAspireDashboardForwarding = true
     )
     {
-        var resource = new GrafanaStackResource(name);
-        var resourceBuilder = builder.AddResource(resource);
+        GrafanaStackResource resource = new(name);
+        IResourceBuilder<GrafanaStackResource> resourceBuilder = builder.AddResource(resource);
 
         resourceBuilder
             .WithImage(GrafanaStackContainerImageTags.Image, GrafanaStackContainerImageTags.Tag)
@@ -47,23 +47,23 @@ internal static class GrafanaStackExtensions
             .WithContainerFiles(
                 "/otel-lgtm",
                 [
-                    new ContainerFile()
+                    new ContainerFile
                     {
                         Name = "otelcol-config-export-http.yaml",
                         Contents = """
-                        service:
-                          pipelines:
-                            traces:
-                              exporters: [otlphttp/traces, otlp/aspire]
-                            metrics:
-                              exporters: [otlphttp/metrics, otlp/aspire]
-                            logs:
-                              exporters: [otlphttp/logs, otlp/aspire]
-                        exporters:
-                          otlp/aspire:
-                            endpoint: ${env:OTEL_EXPORTER_OTLP_ENDPOINT}
-                        """,
-                    },
+                                   service:
+                                     pipelines:
+                                       traces:
+                                         exporters: [otlphttp/traces, otlp/aspire]
+                                       metrics:
+                                         exporters: [otlphttp/metrics, otlp/aspire]
+                                       logs:
+                                         exporters: [otlphttp/logs, otlp/aspire]
+                                   exporters:
+                                     otlp/aspire:
+                                       endpoint: ${env:OTEL_EXPORTER_OTLP_ENDPOINT}
+                                   """
+                    }
                 ]
             );
     }
@@ -79,14 +79,14 @@ internal static class GrafanaStackExtensions
             .WithEnvironment(context =>
             {
                 context.Resource.TryGetLastAnnotation<OtlpExporterAnnotation>(
-                    out var otlpAnnotation
+                    out OtlpExporterAnnotation? otlpAnnotation
                 );
 
-                var endpoint = otlpAnnotation?.RequiredProtocol switch
+                EndpointReference endpoint = otlpAnnotation?.RequiredProtocol switch
                 {
                     OtlpProtocol.HttpProtobuf => grafanaBuilder.Resource.OtlpHttpEndpoint,
                     OtlpProtocol.Grpc => grafanaBuilder.Resource.OtlpEndpoint,
-                    _ => grafanaBuilder.Resource.OtlpEndpoint,
+                    _ => grafanaBuilder.Resource.OtlpEndpoint
                 };
 
                 context.EnvironmentVariables["OTEL_EXPORTER_OTLP_ENDPOINT"] = endpoint;

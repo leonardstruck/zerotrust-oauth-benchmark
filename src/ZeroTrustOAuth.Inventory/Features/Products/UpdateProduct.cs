@@ -50,9 +50,10 @@ public class UpdateProductEndpoint : IEndpoint
         app.MapPut("products/{id:guid}", Handler)
             .WithName("UpdateProduct")
             .WithSummary("Update a product")
-            .WithDescription("Updates an existing product's properties including SKU, name, price, stock, description, and category. At least one property must be provided.")
+            .WithDescription(
+                "Updates an existing product's properties including SKU, name, price, stock, description, and category. At least one property must be provided.")
             .WithTags("Products")
-            .Produces<ProductDetailsDto>(StatusCodes.Status200OK, contentType: "application/json")
+            .Produces<ProductDetailsDto>(StatusCodes.Status200OK, "application/json")
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .Produces(StatusCodes.Status404NotFound);
     }

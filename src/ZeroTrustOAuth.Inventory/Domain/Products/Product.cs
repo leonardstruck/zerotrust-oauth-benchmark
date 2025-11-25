@@ -92,7 +92,9 @@ public class Product
         {
             if (stock < 0)
             {
-                return Result.Invalid([new ValidationError(nameof(stock), "Stock must be greater than or equal to zero.")]);
+                return Result.Invalid([
+                    new ValidationError(nameof(stock), "Stock must be greater than or equal to zero.")
+                ]);
             }
 
             Stock = stock.Value;
