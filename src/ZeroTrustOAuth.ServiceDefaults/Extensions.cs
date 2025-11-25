@@ -6,7 +6,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.ServiceDiscovery;
 
 using OpenTelemetry;
 using OpenTelemetry.Metrics;
@@ -89,11 +88,6 @@ public static class ServiceDefaultsExtensions
                 http.AddServiceDiscovery();
             });
 
-            builder.Services.Configure<ServiceDiscoveryOptions>(options =>
-            {
-                options.AllowedSchemes = ["https"];
-            });
-
             return builder;
         }
 
@@ -133,6 +127,24 @@ public static class ServiceDefaultsExtensions
                 });
 
             builder.AddOpenTelemetryExporters();
+
+            return builder;
+        }
+
+        /// <summary>
+        ///     Executes the provided action when the application is not running as the code-generation host
+        ///     (the entry assembly name is not `GetDocument.Insider`).
+        /// </summary>
+        /// <param name="action">The action to execute with the builder.</param>
+        /// <returns>The same <typeparamref name="TBuilder" /> instance for chaining.</returns>
+        public TBuilder ExecuteWhenNotGenerating(Action<TBuilder> action)
+        {
+            ArgumentNullException.ThrowIfNull(action);
+
+            if (Assembly.GetEntryAssembly()?.GetName().Name != "GetDocument.Insider")
+            {
+                action(builder);
+            }
 
             return builder;
         }

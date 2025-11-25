@@ -1,26 +1,35 @@
-using FastEndpoints;
-using FastEndpoints.Swagger;
+using FluentValidation;
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 using ZeroTrustOAuth.Data.Extensions;
-using ZeroTrustOAuth.Inventory.Data;
-using ZeroTrustOAuth.Inventory.Data.Seeding;
-using ZeroTrustOAuth.Inventory.Domain.Products;
+using ZeroTrustOAuth.Inventory.Features.Categories;
+using ZeroTrustOAuth.Inventory.Infrastructure;
 using ZeroTrustOAuth.ServiceDefaults;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
-builder.AddServiceDefaults();
-
-builder.AddNpgsqlDbContext<InventoryDbContext>(ServiceNames.InventoryDb, configureDbContextOptions: options =>
+builder.ExecuteWhenNotGenerating(_ =>
 {
-    options.UseAsyncSeeding(async (context, _, cancellationToken) =>
-    {
-        await context.Set<Product>().SeedProductsAsync();
+    builder.AddServiceDefaults();
 
-        await context.SaveChangesAsync(cancellationToken);
+    builder.AddNpgsqlDbContext<InventoryDbContext>(ServiceNames.InventoryDb, configureDbContextOptions: options =>
+    {
+        options.UseAsyncSeeding(async (context, _, cancellationToken) =>
+        {
+            if (context is not InventoryDbContext dbContext)
+            {
+                return;
+            }
+
+            await dbContext.Seed(cancellationToken);
+        });
     });
+
+    builder.AddDatabaseMigration<InventoryDbContext>();
+
+    builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 });
+
 
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -35,39 +44,18 @@ builder.Services
     });
 
 builder.Services.AddAuthorization();
-
-
-builder.Services.AddFastEndpoints()
-    .SwaggerDocument(o =>
-    {
-        o.ShortSchemaNames = true;
-        o.EndpointFilter = ep => ep.EndpointTags?.Contains("Internal") is null or false;
-    })
-    .SwaggerDocument(o =>
-    {
-        o.ShortSchemaNames = true;
-        o.EndpointFilter = ep => ep.EndpointTags?.Contains("Internal") is true;
-        o.AutoTagPathSegmentIndex = 2;
-        o.DocumentSettings = s =>
-        {
-            s.DocumentName = "internal";
-        };
-    });
-
+builder.Services.AddOpenApi();
 
 WebApplication app = builder.Build();
-await app.EnsureCreated<InventoryDbContext>();
 
 app
     .UseHttpsRedirection()
-    .UseAuthentication().UseAuthorization()
-    .UseFastEndpoints()
-    .UseSwaggerGen(options =>
-    {
-        options.Path = "/openapi/{documentName}.json";
-    });
+    .UseAuthentication().UseAuthorization();
 
+app.MapOpenApi();
 app.MapDefaultEndpoints();
+
+app.MapEndpoint<GetCategoriesEndpoint>();
 
 
 await app.RunAsync();
