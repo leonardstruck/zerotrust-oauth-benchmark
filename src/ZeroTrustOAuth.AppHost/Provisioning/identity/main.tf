@@ -84,58 +84,11 @@ locals {
       ]
       service_account_role_key = "role_inventory_admin"
     }
-    "shipping-api" = {
-      name                         = "Shipping API"
-      description                  = "Shipping service calling inventory operations."
-      service_accounts_enabled     = true
-      standard_flow_enabled        = true
-      direct_access_grants_enabled = false
-      default_scope_keys           = ["product_read", "stock_read", "stock_adjust"]
-      optional_scope_keys          = ["stock_override", "product_manage"]
-      service_account_role_key     = "role_shipping_worker"
-    }
-    "backoffice-admin-api" = {
-      name                         = "Backoffice Admin API"
-      description                  = "Administrative backoffice client."
-      service_accounts_enabled     = true
-      standard_flow_enabled        = true
-      direct_access_grants_enabled = true
-      default_scope_keys = [
-        "product_read",
-        "catalog_search",
-        "stock_read",
-        "stock_adjust",
-        "stock_override",
-        "product_manage"
-      ]
-      optional_scope_keys      = []
-      service_account_role_key = "role_inventory_admin"
-    }
-    "load-tester" = {
-      name                         = "Load Tester"
-      description                  = "Automated benchmarking client."
-      service_accounts_enabled     = true
-      standard_flow_enabled        = false
-      direct_access_grants_enabled = true
-      default_scope_keys = [
-        "product_read",
-        "catalog_search",
-        "stock_read",
-        "stock_adjust",
-        "stock_override",
-        "product_manage"
-      ]
-      optional_scope_keys      = []
-      service_account_role_key = "role_inventory_admin"
-    }
   }
 
   inventory_client_secrets = {
-    "gateway-api"          = var.gateway_api_client_secret
-    "inventory-api"        = var.inventory_api_client_secret
-    "shipping-api"         = var.shipping_api_client_secret
-    "backoffice-admin-api" = var.backoffice_admin_api_client_secret
-    "load-tester"          = var.load_tester_client_secret
+    "gateway-api"   = var.gateway_api_client_secret
+    "inventory-api" = var.inventory_api_client_secret
   }
 }
 
@@ -186,8 +139,8 @@ resource "keycloak_openid_client" "inventory_clients" {
   standard_flow_enabled        = each.value.standard_flow_enabled
   direct_access_grants_enabled = each.value.direct_access_grants_enabled
   service_accounts_enabled     = each.value.service_accounts_enabled
-  valid_redirect_uris          = lookup(each.value, "valid_redirect_uris", ["*"])
-  web_origins                  = ["+"]
+  valid_redirect_uris          = each.value.standard_flow_enabled ? lookup(each.value, "valid_redirect_uris", ["*"]) : null
+  web_origins                  = each.value.standard_flow_enabled ? ["+"] : null
   root_url                     = lookup(each.value, "root_url", "")
   client_secret                = local.inventory_client_secrets[each.key]
   full_scope_allowed           = false

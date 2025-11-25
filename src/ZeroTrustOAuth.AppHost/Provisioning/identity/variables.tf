@@ -32,21 +32,3 @@ variable "inventory_api_client_secret" {
   type        = string
   sensitive   = true
 }
-
-variable "shipping_api_client_secret" {
-  description = "Confidential client secret for the shipping-api client."
-  type        = string
-  sensitive   = true
-}
-
-variable "backoffice_admin_api_client_secret" {
-  description = "Confidential client secret for the backoffice-admin-api client."
-  type        = string
-  sensitive   = true
-}
-
-variable "load_tester_client_secret" {
-  description = "Confidential client secret for the load-tester client."
-  type        = string
-  sensitive   = true
-}

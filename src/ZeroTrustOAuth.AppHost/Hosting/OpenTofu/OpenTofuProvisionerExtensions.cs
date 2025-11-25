@@ -58,5 +58,10 @@ internal static class OpenTofuProvisionerExtensions
         {
             return builder.WithEnvironment(VariablePrefix + name, value);
         }
+
+        public IResourceBuilder<T> WithVariable(string name, IResourceBuilder<ParameterResource> value)
+        {
+            return builder.WithEnvironment(VariablePrefix + name, value);
+        }
     }
 }

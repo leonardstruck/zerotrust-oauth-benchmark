@@ -22,6 +22,14 @@ IResourceBuilder<PostgresServerResource> postgres = builder
 
 IResourceBuilder<PostgresDatabaseResource> identityDb = postgres.AddDatabase(ServiceNames.IdentityDb);
 
+
+var inventoryApiClientSecret =
+    builder.AddParameter("inventory-api-client-secret", new GenerateParameterDefault(), secret: true);
+
+var gatewayApiClientSecret =
+    builder.AddParameter("gateway-api-client-secret", new GenerateParameterDefault(), secret: true);
+
+
 IResourceBuilder<KeycloakResource> identity = builder
     .AddKeycloak(ServiceNames.Identity)
     .WithPostgres(identityDb)
@@ -33,6 +41,8 @@ builder.AddOpenTofuProvisioner("identity-provisioner", "./Provisioning/identity"
     .WaitFor(identity)
     .WithVariable("keycloak_url", identity.GetEndpoint("http"))
     .WithVariable("keycloak_password", identity.Resource.AdminPasswordParameter)
+    .WithVariable("inventory_api_client_secret", inventoryApiClientSecret)
+    .WithVariable("gateway_api_client_secret", gatewayApiClientSecret)
     .WithOtlpRouting(grafana);
 
 
