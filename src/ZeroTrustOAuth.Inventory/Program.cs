@@ -46,7 +46,7 @@ app.UseAuthorization();
 app.MapOpenApi();
 app.MapDefaultEndpoints();
 
-RouteGroupBuilder inventoryApi = app.MapGroup("/api/inventory");
+RouteGroupBuilder inventoryApi = app.MapGroup("/");
 
 app.MapEndpoint<GetCategoriesEndpoint>(inventoryApi);
 app.MapEndpoint<GetCategoryByIdEndpoint>(inventoryApi);
