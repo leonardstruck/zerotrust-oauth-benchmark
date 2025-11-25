@@ -1,16 +1,31 @@
-using Carter;
-
-using FluentValidation;
+using FastEndpoints;
+using FastEndpoints.Swagger;
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 using ZeroTrustOAuth.Data.Extensions;
 using ZeroTrustOAuth.Inventory.Data;
+using ZeroTrustOAuth.Inventory.Data.Seeding;
+using ZeroTrustOAuth.Inventory.Domain.Products;
 using ZeroTrustOAuth.ServiceDefaults;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
+
+builder.Services.SwaggerDocument(o =>
+{
+    o.EndpointFilter = ep => ep.EndpointTags?.Contains("internal") is null or false;
+});
+
+builder.Services.SwaggerDocument(o =>
+{
+    o.EndpointFilter = ep => ep.EndpointTags?.Contains("internal") is true;
+    o.DocumentSettings = s =>
+    {
+        s.DocumentName = "internal";
+    };
+});
 
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -24,30 +39,34 @@ builder.Services
         }
     });
 
-builder.Services.AddOpenApi("v1");
-builder.Services.AddOpenApi("internal", options =>
-{
-    options.ShouldInclude = ep => ep.GroupName == "internal";
-});
-
-
 builder.Services.AddAuthorization();
 
-// Simplified OpenAPI registration (no transformer now)
-builder.Services.AddOpenApi();
+builder.AddNpgsqlDbContext<InventoryDbContext>(ServiceNames.InventoryDb, configureDbContextOptions: options =>
+{
+    options.UseAsyncSeeding(async (context, _, cancellationToken) =>
+    {
+        await context.Set<Product>().SeedProductsAsync();
 
-builder.AddNpgsqlDbContext<InventoryDbContext>("inventorydb");
-builder.AddMigration<InventoryDbContext>();
-builder.Services.AddValidatorsFromAssemblyContaining<Program>();
-builder.Services.AddCarter();
+        await context.SaveChangesAsync(cancellationToken);
+    });
+});
+
+builder.Services.AddFastEndpoints();
 
 WebApplication app = builder.Build();
-
-app.MapOpenApi();
+await app.EnsureCreated<InventoryDbContext>();
 
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseFastEndpoints();
+
+app.UseSwaggerGen(options =>
+{
+    options.Path = "/openapi/{documentName}.json";
+});
+
 app.MapDefaultEndpoints();
 
 
