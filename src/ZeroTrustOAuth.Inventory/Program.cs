@@ -1,8 +1,7 @@
 using FluentValidation;
 
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-
 using ZeroTrustOAuth.Data.Extensions;
+using ZeroTrustOAuth.Auth;
 using ZeroTrustOAuth.Inventory.Features.Categories;
 using ZeroTrustOAuth.Inventory.Features.Products;
 using ZeroTrustOAuth.Inventory.Infrastructure;
@@ -33,40 +32,32 @@ builder.ExecuteWhenNotGenerating(_ =>
 
 
 builder.Services
-    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddKeycloakJwtBearer(ServiceNames.Identity, "zerotrust-oauth", options =>
-    {
-        options.Audience = "inventory-service";
-
-        if (builder.Environment.IsDevelopment())
-        {
-            options.RequireHttpsMetadata = false;
-        }
-    });
-
-builder.Services.AddAuthorization();
+    .AddZeroTrustAuthentication(builder, ServiceNames.Identity, "zerotrust-oauth", "inventory-api")
+    .AddZeroTrustAuthorization();
 builder.Services.AddOpenApi();
 
 WebApplication app = builder.Build();
 
-app
-    .UseHttpsRedirection()
-    .UseAuthentication().UseAuthorization();
+app.UseHttpsRedirection();
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapOpenApi();
 app.MapDefaultEndpoints();
 
-app.MapEndpoint<GetCategoriesEndpoint>();
-app.MapEndpoint<GetCategoryByIdEndpoint>();
-app.MapEndpoint<CreateCategoryEndpoint>();
-app.MapEndpoint<UpdateCategoryEndpoint>();
-app.MapEndpoint<ActivateCategoryEndpoint>();
-app.MapEndpoint<DeactivateCategoryEndpoint>();
+RouteGroupBuilder inventoryApi = app.MapGroup("/api/inventory");
 
-app.MapEndpoint<GetProductsEndpoint>();
-app.MapEndpoint<GetProductByIdEndpoint>();
-app.MapEndpoint<CreateProductEndpoint>();
-app.MapEndpoint<UpdateProductEndpoint>();
+app.MapEndpoint<GetCategoriesEndpoint>(inventoryApi);
+app.MapEndpoint<GetCategoryByIdEndpoint>(inventoryApi);
+app.MapEndpoint<CreateCategoryEndpoint>(inventoryApi);
+app.MapEndpoint<UpdateCategoryEndpoint>(inventoryApi);
+app.MapEndpoint<ActivateCategoryEndpoint>(inventoryApi);
+app.MapEndpoint<DeactivateCategoryEndpoint>(inventoryApi);
+
+app.MapEndpoint<GetProductsEndpoint>(inventoryApi);
+app.MapEndpoint<GetProductByIdEndpoint>(inventoryApi);
+app.MapEndpoint<CreateProductEndpoint>(inventoryApi);
+app.MapEndpoint<UpdateProductEndpoint>(inventoryApi);
 
 
 await app.RunAsync();

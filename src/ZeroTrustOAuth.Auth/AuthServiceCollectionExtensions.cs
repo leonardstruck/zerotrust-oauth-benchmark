@@ -1,9 +1,12 @@
+using Aspire.Keycloak.Authentication;
+
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 
 namespace ZeroTrustOAuth.Auth;
 
@@ -13,19 +16,36 @@ public static class AuthServiceCollectionExtensions
 
     public static IServiceCollection AddZeroTrustAuthentication(
         this IServiceCollection services,
-        IConfiguration configuration)
+        IHostApplicationBuilder builder,
+        string identityServiceName,
+        string realm,
+        string audience)
     {
         ArgumentNullException.ThrowIfNull(services);
-        ArgumentNullException.ThrowIfNull(configuration);
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentException.ThrowIfNullOrWhiteSpace(identityServiceName);
+        ArgumentException.ThrowIfNullOrWhiteSpace(realm);
+        ArgumentException.ThrowIfNullOrWhiteSpace(audience);
 
-        KeycloakOptions keycloakOptions = configuration.GetSection("Keycloak").Get<KeycloakOptions>()
-                                       ?? throw new InvalidOperationException(
-                                           "Keycloak configuration is missing. Please configure the 'Keycloak' section.");
+        IConfigurationSection securitySection = builder.Configuration.GetSection("Security");
+        services.AddOptions<SecurityOptions>()
+            .Bind(securitySection)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
 
-        SecurityOptions securityOptions = configuration.GetSection("Security").Get<SecurityOptions>() ?? new();
+        SecurityOptions securityOptions = securitySection.Get<SecurityOptions>() ?? new();
 
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-            .AddJwtBearer(options => ConfigureJwtBearer(options, keycloakOptions));
+            .AddKeycloakJwtBearer(identityServiceName, realm, options =>
+            {
+                options.Audience = audience;
+                options.MapInboundClaims = false;
+
+                if (builder.Environment.IsDevelopment())
+                {
+                    options.RequireHttpsMetadata = false;
+                }
+            });
 
         // Future flows can swap or extend authentication handlers.
         _ = securityOptions.AuthFlow;
@@ -56,14 +76,6 @@ public static class AuthServiceCollectionExtensions
         });
 
         return services;
-    }
-
-    private static void ConfigureJwtBearer(JwtBearerOptions options, KeycloakOptions keycloakOptions)
-    {
-        options.Authority = keycloakOptions.Authority;
-        options.Audience = keycloakOptions.Audience;
-        options.RequireHttpsMetadata = keycloakOptions.RequireHttpsMetadata;
-        options.MapInboundClaims = false; // keep canonical claim types for scope policies
     }
 
     private static AuthorizationPolicyBuilder RequireScope(
