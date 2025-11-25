@@ -3,6 +3,8 @@
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Aspire.Keycloak.Authentication" />
+    <PackageReference Include="Duende.AccessTokenManagement" />
+    <PackageReference Include="Duende.IdentityModel" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
   </ItemGroup>
 

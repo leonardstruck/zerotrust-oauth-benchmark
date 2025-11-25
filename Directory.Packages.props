@@ -17,6 +17,8 @@
     <PackageVersion Include="Aspire.Keycloak.Authentication" Version="13.1.0-preview.1.25574.12" />
     <PackageVersion Include="Aspire.Npgsql.EntityFrameworkCore.PostgreSQL" Version="13.1.0-preview.1.25574.12" />
     <PackageVersion Include="CommunityToolkit.Aspire.Hosting.Keycloak.Extensions" Version="13.0.0-preview.1.251125-0315" />
+    <PackageVersion Include="Duende.AccessTokenManagement" Version="4.0.1" />
+    <PackageVersion Include="Duende.IdentityModel" Version="7.1.0" />
     <PackageVersion Include="ErrorOr" Version="2.0.1" />
     <PackageVersion Include="FastEndpoints" Version="7.1.1" />
     <PackageVersion Include="Facet" Version="5.0.1" />
