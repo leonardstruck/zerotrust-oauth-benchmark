@@ -1,6 +1,7 @@
 <Project>
   <PropertyGroup>
-    <!-- Enable central package management, https://learn.microsoft.com/en-us/nuget/consume-packages/Central-Package-Management -->
+    <!-- Enable central package management,
+    https://learn.microsoft.com/en-us/nuget/consume-packages/Central-Package-Management -->
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
@@ -15,8 +16,13 @@
     <PackageVersion Include="Aspire.Hosting.PostgreSQL" Version="13.1.0-preview.1.25574.12" />
     <PackageVersion Include="Aspire.Hosting.Yarp" Version="13.1.0-preview.1.25574.12" />
     <PackageVersion Include="Aspire.Keycloak.Authentication" Version="13.1.0-preview.1.25574.12" />
-    <PackageVersion Include="Aspire.Npgsql.EntityFrameworkCore.PostgreSQL" Version="13.1.0-preview.1.25574.12" />
-    <PackageVersion Include="CommunityToolkit.Aspire.Hosting.Keycloak.Extensions" Version="13.0.0-preview.1.251125-0315" />
+    <PackageVersion Include="Aspire.Npgsql.EntityFrameworkCore.PostgreSQL"
+      Version="13.1.0-preview.1.25574.12" />
+    <PackageVersion Include="CommunityToolkit.Aspire.Hosting.Keycloak.Extensions"
+      Version="13.0.0-preview.1.251125-0315" />
+    <PackageVersion Include="Duende.AccessTokenManagement" Version="4.0.1" />
+    <PackageVersion Include="Duende.AspNetCore.Authentication.OAuth2Introspection" Version="6.3.0" />
+    <PackageVersion Include="Duende.IdentityModel.OidcClient" Version="6.0.1" />
     <PackageVersion Include="ErrorOr" Version="2.0.1" />
     <PackageVersion Include="FastEndpoints" Version="7.1.1" />
     <PackageVersion Include="Facet" Version="5.0.1" />
