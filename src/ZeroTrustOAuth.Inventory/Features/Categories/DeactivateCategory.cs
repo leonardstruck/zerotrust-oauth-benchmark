@@ -13,6 +13,9 @@ public class DeactivateCategoryEndpoint : IEndpoint
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
         app.MapPost("categories/{id:guid}/deactivate", Handler)
+            .WithName("DeactivateCategory")
+            .WithSummary("Deactivate a category")
+            .WithDescription("Deactivates a category, making it unavailable for use in the inventory system while preserving its data.")
             .WithTags("Categories")
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status400BadRequest)

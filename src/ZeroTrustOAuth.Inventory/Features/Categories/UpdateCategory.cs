@@ -38,8 +38,11 @@ public class UpdateCategoryEndpoint : IEndpoint
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
         app.MapPut("categories/{id:guid}", Handler)
+            .WithName("UpdateCategory")
+            .WithSummary("Update a category")
+            .WithDescription("Updates an existing category's name and/or description. At least one property must be provided.")
             .WithTags("Categories")
-            .Produces<CategoryDetailsDto>(StatusCodes.Status200OK)
+            .Produces<CategoryDetailsDto>(StatusCodes.Status200OK, contentType: "application/json")
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .Produces(StatusCodes.Status404NotFound);
     }

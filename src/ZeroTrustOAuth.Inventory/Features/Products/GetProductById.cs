@@ -13,8 +13,11 @@ public class GetProductByIdEndpoint : IEndpoint
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
         app.MapGet("products/{id:guid}", Handler)
+            .WithName("GetProductById")
+            .WithSummary("Get a product by ID")
+            .WithDescription("Retrieves detailed information about a specific product by its unique identifier, including full description and category details.")
             .WithTags("Products")
-            .Produces<ProductDetailsDto>(StatusCodes.Status200OK)
+            .Produces<ProductDetailsDto>(StatusCodes.Status200OK, contentType: "application/json")
             .Produces(StatusCodes.Status404NotFound);
     }
 

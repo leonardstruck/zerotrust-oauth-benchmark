@@ -15,8 +15,11 @@ public class GetProductsEndpoint : IEndpoint
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
         app.MapGet("products", Handler)
+            .WithName("GetProducts")
+            .WithSummary("Get all products")
+            .WithDescription("Retrieves a list of all products in the inventory system, including their SKU, name, price, stock, and associated category.")
             .WithTags("Products")
-            .Produces<GetProductsResponse>(StatusCodes.Status200OK);
+            .Produces<GetProductsResponse>(StatusCodes.Status200OK, contentType: "application/json");
     }
 
     private static async Task<Ok<GetProductsResponse>> Handler(

@@ -13,6 +13,9 @@ public class ActivateCategoryEndpoint : IEndpoint
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
         app.MapPost("categories/{id:guid}/activate", Handler)
+            .WithName("ActivateCategory")
+            .WithSummary("Activate a category")
+            .WithDescription("Activates a previously deactivated category, making it available for use in the inventory system.")
             .WithTags("Categories")
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status400BadRequest)

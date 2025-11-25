@@ -15,8 +15,11 @@ public class GetCategoryByIdEndpoint : IEndpoint
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
         app.MapGet("categories/{id:guid}", Handler)
+            .WithName("GetCategoryById")
+            .WithSummary("Get a category by ID")
+            .WithDescription("Retrieves detailed information about a specific category by its unique identifier.")
             .WithTags("Categories")
-            .Produces<CategoryDetailsDto>(StatusCodes.Status200OK)
+            .Produces<CategoryDetailsDto>(StatusCodes.Status200OK, contentType: "application/json")
             .Produces(StatusCodes.Status404NotFound);
     }
 

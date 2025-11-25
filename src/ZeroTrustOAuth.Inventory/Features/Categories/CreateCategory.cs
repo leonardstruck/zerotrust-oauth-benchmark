@@ -33,8 +33,11 @@ public class CreateCategoryEndpoint : IEndpoint
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
         app.MapPost("categories", Handler)
+            .WithName("CreateCategory")
+            .WithSummary("Create a new category")
+            .WithDescription("Creates a new category in the inventory system with the provided name, description, and active status.")
             .WithTags("Categories")
-            .Produces<CategoryDetailsDto>(StatusCodes.Status201Created)
+            .Produces<CategoryDetailsDto>(StatusCodes.Status201Created, contentType: "application/json")
             .ProducesProblem(StatusCodes.Status400BadRequest);
     }
 

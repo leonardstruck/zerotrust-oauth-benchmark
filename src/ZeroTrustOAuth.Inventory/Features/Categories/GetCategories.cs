@@ -17,8 +17,11 @@ public class GetCategoriesEndpoint : IEndpoint
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
         app.MapGet("categories", Handler)
+            .WithName("GetCategories")
+            .WithSummary("Get all categories")
+            .WithDescription("Retrieves a list of all categories in the inventory system.")
             .WithTags("Categories")
-            .Produces<GetCategoriesResponse>(StatusCodes.Status200OK);
+            .Produces<GetCategoriesResponse>(StatusCodes.Status200OK, contentType: "application/json");
     }
 
     private static async Task<Ok<GetCategoriesResponse>> Handler([FromServices] InventoryDbContext dbContext,

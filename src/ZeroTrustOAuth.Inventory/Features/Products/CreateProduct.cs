@@ -42,8 +42,11 @@ public class CreateProductEndpoint : IEndpoint
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
         app.MapPost("products", Handler)
+            .WithName("CreateProduct")
+            .WithSummary("Create a new product")
+            .WithDescription("Creates a new product in the inventory system with SKU, name, price, stock quantity, optional description, and optional category assignment.")
             .WithTags("Products")
-            .Produces<ProductDetailsDto>(StatusCodes.Status201Created)
+            .Produces<ProductDetailsDto>(StatusCodes.Status201Created, contentType: "application/json")
             .ProducesProblem(StatusCodes.Status400BadRequest);
     }
 
